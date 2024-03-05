@@ -161,6 +161,32 @@ if efficacy_missing:
 if efficacy_conditions:
     df_filtered = df_filtered[any(efficacy_conditions)]
 
+# Checkboxes for Knowledge about disease
+knowledge_high = st.sidebar.checkbox('High knowledge', value=False)
+knowledge_moderate = st.sidebar.checkbox('Moderate knowledge', value=False)
+knowledge_low = st.sidebar.checkbox('Low knowledge', value=False)
+knowledge_minimal = st.sidebar.checkbox('Minimal knowledge', value=False)
+knowledge_missing = st.sidebar.checkbox('Missing', value=False)
+
+# Apply Knowledge filter
+knowledge_conditions = []
+if knowledge_high:
+    knowledge_conditions.append(df_filtered['knowledge'] == 3)
+if knowledge_moderate:
+    knowledge_conditions.append(df_filtered['knowledge'] == 2)
+if knowledge_low:
+    knowledge_conditions.append(df_filtered['knowledge'] == 1)
+if knowledge_minimal:
+    knowledge_conditions.append(df_filtered['knowledge'] == 0)
+if knowledge_missing:
+    knowledge_conditions.append(df_filtered['knowledge'].isna())
+
+# Apply the filters if any knowledge conditions are selected, otherwise use unfiltered data
+if knowledge_conditions:
+    df_filtered = df_filtered[any(knowledge_conditions)]
+
+
+
 # Main section
 st.write(f"Genes matching selected criteria:")
 st.write(df_filtered['gene_official'].tolist())
