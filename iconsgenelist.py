@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-
+import plotly.express as px
 
 # Use st.cache_data to cache the data loading function
 @st.cache_data
@@ -200,3 +200,41 @@ genes_html += "</div>"
 
 st.markdown(genes_html, unsafe_allow_html=True)
 
+# Assuming df_filtered is your DataFrame filtered according to the user's selections.
+
+categories = [
+    'rusp',                # RUSP status
+    'inheritance',         # Inheritance pattern
+    'orthogonal_test',     # Orthogonal test
+    'age_onset_asqm_standard', # Age of onset
+    'severity',            # Severity of disease
+    'efficacy'             # Efficacy of treatment
+]
+
+# Function to generate and display bar graphs for each category
+def generate_and_display_bar_graphs(df, categories):
+    for category in categories:
+        # Prepare data for plotting
+        gene_counts = df[category].value_counts().reset_index()
+        gene_counts.columns = [category, 'Number of Genes']
+        
+        # For tooltips, we aggregate genes into lists grouped by the category
+        tooltips = df.groupby(category)['gene_official'].apply(list).reset_index(name='Genes')
+        plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
+        
+        # Plot
+        fig = px.bar(plot_data, x=category, y='Number of Genes',
+                     hover_data=['Genes'],
+                     labels={'Genes': 'Included Genes'},
+                     title=f'Number of Genes by {category.replace("_", " ").title()}')
+        fig.update_traces(marker_color='navy', hovertemplate="<br>".join([
+            "Category: %{x}",
+            "Number of Genes: %{y}",
+            "Genes: %{customdata[0]}"]))
+        fig.update_layout(xaxis_title=category.replace("_", " ").title(), yaxis_title="Number of Genes")
+        
+        # Display the figure
+        st.plotly_chart(fig, use_container_width=True)
+
+# Assuming df_filtered is already defined and filtered based on the user's selections
+generate_and_display_bar_graphs(df_filtered, categories)
