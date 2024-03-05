@@ -14,17 +14,24 @@ st.title('Newborn Screening Gene Selector')
 # Sidebar
 st.sidebar.header('Filters')
 
-# Radio button for RUSP status
-rusp_status = st.sidebar.radio(
-    "RUSP status",
-    ['Core', 'Secondary', 'Not on RUSP']
-)
+# Checkboxes for RUSP status
+rusp_core = st.sidebar.checkbox('Core', value=False)
+rusp_secondary = st.sidebar.checkbox('Secondary', value=False)
+rusp_not_on_rusp = st.sidebar.checkbox('Not on RUSP', value=False)
 
 # Apply RUSP status filter
-if rusp_status == 'Not on RUSP':
-    df_filtered = df[df['rusp'].isna()]
+rusp_conditions = []
+if rusp_core:
+    rusp_conditions.append(df['rusp'] == 'Core')
+if rusp_secondary:
+    rusp_conditions.append(df['rusp'] == 'Secondary')
+if rusp_not_on_rusp:
+    rusp_conditions.append(df['rusp'].isna())
+
+if rusp_conditions:
+    df_filtered = df[any(rusp_conditions)]
 else:
-    df_filtered = df[df['rusp'] == rusp_status]
+    df_filtered = df.copy()
 
 # Slider for number of screening programs
 num_programs = st.sidebar.slider('Number of screening programs that include gene', 1, 25, 1)
@@ -37,9 +44,8 @@ screening_programs = [col[4:].capitalize() for col in df.columns if col.startswi
 selected_programs = st.sidebar.multiselect('Screening Programs', screening_programs)
 
 # Filter data based on selected screening programs
-for program in selected_programs:
-    program_col = 'scr_' + program.lower()
-    df_filtered = df_filtered[df_filtered[program_col] == 1]
+if selected_programs:
+    df_filtered = df_filtered[df_filtered[[f'scr_{program.lower()}' for program in selected_programs]].any(axis=1)]
 
 # Main section
 st.write(f"Genes matching selected criteria:")
