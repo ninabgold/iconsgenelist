@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
 
-# Load the data
+# Use st.cache_data to cache the data loading function
 @st.cache_data
 def load_data():
-    return pd.read_csv('~/Documents/GitHub/iconsgenelist/iconsgenelist_all_version15Feb.csv')
+    return pd.read_csv('genelist_all_version15Feb.csv')
 
 df = load_data()
 
