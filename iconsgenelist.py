@@ -191,5 +191,10 @@ if efficacy_missing:
 df_filtered = df_filtered.query(" or ".join(efficacy_conditions)) if efficacy_conditions else df_filtered
 
 # Display the filtered results
-st.write(f"Genes matching selected criteria:")
-st.write(df_filtered['gene_official'].tolist())
+genes_list = df_filtered['gene_official'].tolist()
+genes_html = "<div style='font-family: Arial; font-size: 11px; color: black;'>"
+for gene in genes_list:
+    genes_html += f"{gene}<br>"
+genes_html += "</div>"
+
+st.markdown(genes_html, unsafe_allow_html=True)
