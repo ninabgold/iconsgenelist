@@ -47,6 +47,26 @@ selected_programs = st.sidebar.multiselect('Screening Programs', screening_progr
 if selected_programs:
     df_filtered = df_filtered[df_filtered[[f'scr_{program.lower()}' for program in selected_programs]].any(axis=1)]
 
+# Checkboxes for Inheritance
+inheritance_ar = st.sidebar.checkbox('AR', value=False)
+inheritance_ad = st.sidebar.checkbox('AD', value=False)
+inheritance_xl = st.sidebar.checkbox('XL', value=False)
+inheritance_missing = st.sidebar.checkbox('Missing', value=False)
+
+# Apply Inheritance filter
+inheritance_conditions = []
+if inheritance_ar:
+    inheritance_conditions.append(df_filtered['inheritance'] == 'AR')
+if inheritance_ad:
+    inheritance_conditions.append(df_filtered['inheritance'] == 'AD')
+if inheritance_xl:
+    inheritance_conditions.append(df_filtered['inheritance'] == 'XLR')
+if inheritance_missing:
+    inheritance_conditions.append(df_filtered['inheritance'].isna())
+
+if inheritance_conditions:
+    df_filtered = df_filtered[any(inheritance_conditions)]
+
 # Main section
 st.write(f"Genes matching selected criteria:")
 st.write(df_filtered['gene_official'].tolist())
