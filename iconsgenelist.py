@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 
+
 # Use st.cache_data to cache the data loading function
 @st.cache_data
 def load_data():
@@ -198,3 +199,4 @@ for gene in genes_list:
 genes_html += "</div>"
 
 st.markdown(genes_html, unsafe_allow_html=True)
+
