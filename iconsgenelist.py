@@ -22,32 +22,35 @@ rusp_core = st.sidebar.checkbox('Core', value=False, key='rusp_core_key')
 rusp_secondary = st.sidebar.checkbox('Secondary', value=False, key='rusp_secondary_key')
 rusp_not_on_rusp = st.sidebar.checkbox('Not on RUSP', value=False, key='rusp_not_on_rusp_key')
 
-# Apply RUSP status filter
-rusp_conditions = []
+# Apply RUSP status filter using DataFrame.query method to avoid ambiguity
+query_string = []
 if rusp_core:
-    rusp_conditions.append(df['rusp'] == 'Core')
+    query_string.append("rusp == 'Core'")
 if rusp_secondary:
-    rusp_conditions.append(df['rusp'] == 'Secondary')
+    query_string.append("rusp == 'Secondary'")
 if rusp_not_on_rusp:
-    rusp_conditions.append(df['rusp'].isna())
+    query_string.append("rusp.isna()", engine='python')
 
-# Apply the filters if any RUSP conditions are selected, otherwise use unfiltered data
-df_filtered = df[any(rusp_conditions)] if rusp_conditions else df.copy()
+df_filtered = df.query(" or ".join(query_string)) if query_string else df.copy()
 
 # Slider for number of screening programs
 num_programs = st.sidebar.slider('Number of screening programs that include gene', 1, 25, 1, key='num_programs_key')
 
-# Filter data based on number of programs (applying it on the already RUSP-filtered data)
+# Further filter data based on number of programs
 df_filtered = df_filtered[df_filtered['scr_sum'] >= num_programs]
 
-# Multiselector for screening programs with unique key
+# Multiselector for screening programs
+st.sidebar.header('Screening Programs')
 screening_programs = [col[4:].capitalize() for col in df.columns if col.startswith('scr_') and col not in ['scr_sum', 'rusp']]
-selected_programs = st.sidebar.multiselect('Screening Programs', screening_programs, key='selected_programs_key')
+selected_programs = st.sidebar.multiselect('Select Programs', screening_programs, key='selected_programs_key')
 
-# Filter data based on selected screening programs
+# Applying filter based on selected screening programs
 if selected_programs:
-    program_conditions = [df_filtered[f'scr_{program.lower()}'] == 1 for program in selected_programs]
-    df_filtered = df_filtered[any(program_conditions)]
+    program_filter = " or ".join([f"`scr_{program.lower()}` == 1" for program in selected_programs])
+    df_filtered = df_filtered.query(program_filter)
+
+# Title for Inheritance checkboxes
+st.sidebar.header('Inheritance')
 
 # Checkboxes for Inheritance with unique keys
 inheritance_ar = st.sidebar.checkbox('AR', value=False, key='inheritance_ar_key')
@@ -58,16 +61,18 @@ inheritance_missing = st.sidebar.checkbox('Missing', value=False, key='inheritan
 # Apply Inheritance filter
 inheritance_conditions = []
 if inheritance_ar:
-    inheritance_conditions.append(df_filtered['inheritance'] == 'AR')
+    inheritance_conditions.append("inheritance == 'AR'")
 if inheritance_ad:
-    inheritance_conditions.append(df_filtered['inheritance'] == 'AD')
+    inheritance_conditions.append("inheritance == 'AD'")
 if inheritance_xl:
-    inheritance_conditions.append(df_filtered['inheritance'] == 'XLR')
+    inheritance_conditions.append("inheritance == 'XLR'")
 if inheritance_missing:
-    inheritance_conditions.append(df_filtered['inheritance'].isna())
+    inheritance_conditions.append("inheritance.isna()")
 
-if inheritance_conditions:
-    df_filtered = df_filtered[any(inheritance_conditions)]
+df_filtered = df_filtered.query(" or ".join(inheritance_conditions)) if inheritance_conditions else df_filtered
+
+# Title for Penetrance checkboxes
+st.sidebar.header('Penetrance')
 
 # Checkboxes for Penetrance with unique keys
 penetrance_high = st.sidebar.checkbox('High', value=False, key='penetrance_high_key')
@@ -77,14 +82,16 @@ penetrance_missing = st.sidebar.checkbox('Missing', value=False, key='penetrance
 # Apply Penetrance filter
 penetrance_conditions = []
 if penetrance_high:
-    penetrance_conditions.append(df_filtered['penetrance'] == 'HIGH (A)')
+    penetrance_conditions.append("penetrance == 'HIGH (A)'")
 if penetrance_moderate:
-    penetrance_conditions.append(df_filtered['penetrance'] == 'MODERATE(A)')
+    penetrance_conditions.append("penetrance == 'MODERATE(A)'")
 if penetrance_missing:
-    penetrance_conditions.append(df_filtered['penetrance'].isna())
+    penetrance_conditions.append("penetrance.isna()")
 
-if penetrance_conditions:
-    df_filtered = df_filtered[any(penetrance_conditions)]
+df_filtered = df_filtered.query(" or ".join(penetrance_conditions)) if penetrance_conditions else df_filtered
+
+# Title for Orthogonal test checkboxes
+st.sidebar.header('Orthogonal Test')
 
 # Checkboxes for Orthogonal test with unique keys
 orthogonal_yes = st.sidebar.checkbox('Yes', value=False, key='orthogonal_yes_key')
@@ -94,14 +101,16 @@ orthogonal_missing = st.sidebar.checkbox('Missing', value=False, key='orthogonal
 # Apply Orthogonal test filter
 orthogonal_conditions = []
 if orthogonal_yes:
-    orthogonal_conditions.append(df_filtered['orthogonal_test'] == 'Y')
+    orthogonal_conditions.append("orthogonal_test == 'Y'")
 if orthogonal_no:
-    orthogonal_conditions.append(df_filtered['orthogonal_test'] == 'N')
+    orthogonal_conditions.append("orthogonal_test == 'N'")
 if orthogonal_missing:
-    orthogonal_conditions.append(df_filtered['orthogonal_test'].isna())
+    orthogonal_conditions.append("orthogonal_test.isna()")
 
-if orthogonal_conditions:
-    df_filtered = df_filtered[any(orthogonal_conditions)]
+df_filtered = df_filtered.query(" or ".join(orthogonal_conditions)) if orthogonal_conditions else df_filtered
+
+# Title for Age of Onset (ASQM) checkboxes
+st.sidebar.header('Age of Onset (ASQM)')
 
 # Checkboxes for Age of Onset (ASQM) with unique keys
 age_onset_birth = st.sidebar.checkbox('Birth', value=False, key='age_onset_birth_key')
@@ -115,25 +124,72 @@ age_onset_missing = st.sidebar.checkbox('Missing', value=False, key='age_onset_m
 # Apply Age of Onset (ASQM) filter
 age_onset_conditions = []
 if age_onset_birth:
-    age_onset_conditions.append(df_filtered['age_onset_asqm_standard'] == 'Birth')
+    age_onset_conditions.append("age_onset_asqm_standard == 'Birth'")
 if age_onset_neonatal:
-    age_onset_conditions.append(df_filtered['age_onset_asqm_standard'] == 'Neonatal')
+    age_onset_conditions.append("age_onset_asqm_standard == 'Neonatal'")
 if age_onset_infant:
-    age_onset_conditions.append(df_filtered['age_onset_asqm_standard'] == 'Infant')
+    age_onset_conditions.append("age_onset_asqm_standard == 'Infant'")
 if age_onset_childhood:
-    age_onset_conditions.append(df_filtered['age_onset_asqm_standard'] == 'Childhood')
+    age_onset_conditions.append("age_onset_asqm_standard == 'Childhood'")
 if age_onset_adolescent_adult:
-    age_onset_conditions.append(df_filtered['age_onset_asqm_standard'] == 'Adolescent/Adult')
+    age_onset_conditions.append("age_onset_asqm_standard == 'Adolescent/Adult'")
 if age_onset_variable:
-    age_onset_conditions.append(df_filtered['age_onset_asqm_standard'] == 'Variable')
+    age_onset_conditions.append("age_onset_asqm_standard == 'Variable'")
 if age_onset_missing:
-    age_onset_conditions.append(df_filtered['age_onset_asqm_standard'].isna())
+    age_onset_conditions.append("age_onset_asqm_standard.isna()")
 
-if age_onset_conditions:
-    df_filtered = df_filtered[any(age_onset_conditions)]
+df_filtered = df_filtered.query(" or ".join(age_onset_conditions)) if age_onset_conditions else df_filtered
 
-# Skipping severity and efficacy for brevity, but ensure to add unique keys as shown above for these sections too
+# Title for Severity of disease checkboxes
+st.sidebar.header('Severity of Disease')
 
-# Main section
+# Checkboxes for Severity with unique keys
+severity_severe = st.sidebar.checkbox('Severe', value=False, key='severity_severe_key')
+severity_moderate = st.sidebar.checkbox('Moderate', value=False, key='severity_moderate_key')
+severity_mild = st.sidebar.checkbox('Mild', value=False, key='severity_mild_key')
+severity_no_symptoms = st.sidebar.checkbox('No symptoms', value=False, key='severity_no_symptoms_key')
+severity_missing = st.sidebar.checkbox('Missing', value=False, key='severity_missing_key')
+
+# Apply Severity filter
+severity_conditions = []
+if severity_severe:
+    severity_conditions.append("severity == 3")
+if severity_moderate:
+    severity_conditions.append("severity == 2")
+if severity_mild:
+    severity_conditions.append("severity == 1")
+if severity_no_symptoms:
+    severity_conditions.append("severity == 0")
+if severity_missing:
+    severity_conditions.append("severity.isna()")
+
+df_filtered = df_filtered.query(" or ".join(severity_conditions)) if severity_conditions else df_filtered
+
+# Title for Efficacy of Treatment checkboxes
+st.sidebar.header('Efficacy of Treatment')
+
+# Checkboxes for Efficacy of Treatment with unique keys
+efficacy_high = st.sidebar.checkbox('High efficacy', value=False, key='efficacy_high_key')
+efficacy_moderate = st.sidebar.checkbox('Moderate efficacy', value=False, key='efficacy_moderate_key')
+efficacy_minimal = st.sidebar.checkbox('Minimal efficacy', value=False, key='efficacy_minimal_key')
+efficacy_no_treatment = st.sidebar.checkbox('No treatment', value=False, key='efficacy_no_treatment_key')
+efficacy_missing = st.sidebar.checkbox('Missing', value=False, key='efficacy_missing_key')
+
+# Apply Efficacy of Treatment filter
+efficacy_conditions = []
+if efficacy_high:
+    efficacy_conditions.append("efficacy == 3")
+if efficacy_moderate:
+    efficacy_conditions.append("efficacy == 2")
+if efficacy_minimal:
+    efficacy_conditions.append("efficacy == 1")
+if efficacy_no_treatment:
+    efficacy_conditions.append("efficacy == 0")
+if efficacy_missing:
+    efficacy_conditions.append("efficacy.isna()")
+
+df_filtered = df_filtered.query(" or ".join(efficacy_conditions)) if efficacy_conditions else df_filtered
+
+# Display the filtered results
 st.write(f"Genes matching selected criteria:")
 st.write(df_filtered['gene_official'].tolist())
