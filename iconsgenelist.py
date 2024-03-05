@@ -14,6 +14,9 @@ st.title('Newborn Screening Gene Selector')
 # Sidebar
 st.sidebar.header('Filters')
 
+# Title for RUSP status checkboxes
+st.sidebar.header('US RUSP Status')
+
 # Checkboxes for RUSP status
 rusp_core = st.sidebar.checkbox('Core', value=False)
 rusp_secondary = st.sidebar.checkbox('Secondary', value=False)
