@@ -85,6 +85,23 @@ if penetrance_missing:
 if penetrance_conditions:
     df_filtered = df_filtered[any(penetrance_conditions)]
 
+# Checkboxes for Orthogonal test
+orthogonal_yes = st.sidebar.checkbox('Yes', value=False)
+orthogonal_no = st.sidebar.checkbox('No', value=False)
+orthogonal_missing = st.sidebar.checkbox('Missing', value=False)
+
+# Apply Orthogonal test filter
+orthogonal_conditions = []
+if orthogonal_yes:
+    orthogonal_conditions.append(df_filtered['orthogonal_test'] == 'Y')
+if orthogonal_no:
+    orthogonal_conditions.append(df_filtered['orthogonal_test'] == 'N')
+if orthogonal_missing:
+    orthogonal_conditions.append(df_filtered['orthogonal_test'].isna())
+
+if orthogonal_conditions:
+    df_filtered = df_filtered[any(orthogonal_conditions)]
+
 # Checkboxes for Age of Onset (ASQM)
 age_onset_birth = st.sidebar.checkbox('Birth', value=False)
 age_onset_neonatal = st.sidebar.checkbox('Neonatal', value=False)
@@ -184,8 +201,6 @@ if knowledge_missing:
 # Apply the filters if any knowledge conditions are selected, otherwise use unfiltered data
 if knowledge_conditions:
     df_filtered = df_filtered[any(knowledge_conditions)]
-
-
 
 # Main section
 st.write(f"Genes matching selected criteria:")
