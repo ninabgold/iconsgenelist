@@ -210,7 +210,7 @@ st.markdown(genes_html, unsafe_allow_html=True)
 
 categories = [
     'rusp',                             # RUSP status
-    'inheritance_babyseq',              # Inheritance pattern
+    'inheritance_babyseq2',              # Inheritance pattern
     'orthogonal_test_goldetaldet',      # Orthogonal test
     'age_onset_asqm_standard',          # Age of onset
     'severity_asqm',                    # Severity of disease
