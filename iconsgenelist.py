@@ -228,43 +228,62 @@ custom_titles = {
     'efficacy_asqm': 'Efficacy (ASQM)'
 }
 
+# Custom titles for the plots
+custom_titles = {
+    'rusp': 'US RUSP status',
+    'inheritance_babyseq2': 'Inheritance',
+    'orthogonal_test_goldetaldet': 'Orthogonal test',
+    'age_onset_asqm_standard': 'Age of onset (ASQM)',
+    'severity_asqm': 'Severity (ASQM)',
+    'efficacy_asqm': 'Efficacy (ASQM)'
+}
+
+def preprocess_for_missing_data(df, columns):
+    """
+    Adjust specified columns in the DataFrame to include 'Missing' as a category
+    for NaN (empty) cells.
+    """
+    for column in columns:
+        df[column] = df[column].fillna('Missing')
+    return df
 
 def generate_individual_plots(df, category, title, show_yaxis_label):
-    # Copy df to avoid altering original df outside this function
-    df = df.copy()
+    # Prepare data for plotting
+    gene_counts = df[category].value_counts().reset_index()
+    gene_counts.columns = [category, 'Number of Genes']
 
-    # Handle 'Missing' data and specific category adjustments
-    if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'severity_asqm', 'efficacy_asqm']:
-        df[category] = df[category].fillna('Missing')
-    if category == 'orthogonal_test_goldetaldet':
-        df[category] = df[category].replace({'missing': 'Missing', 'y': 'Y', 'n': 'N'})
-    if category == 'age_onset_asqm_standard':
-        df[category] = df[category].replace({'missing': 'Missing', 'Childhood': 'Child', 'Adolescent/Adult': 'Adult'})
-    if category == 'severity_asqm':
-        df[category] = df[category].map({'0': 'Missing', '1': 'Mild', '2': 'Moderate', '3': 'Severe'})
-    if category == 'efficacy_asqm':
-        df[category] = df[category].map({'0': 'Missing', '1': 'Minimal', '2': 'Moderate', '3': 'High'})
+    tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
+    plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
 
-    # Ensure custom ordering is applied for 'Missing' data and other specified categories
-    if category == 'rusp':
-        df[category] = pd.Categorical(df[category], categories=['Core', 'Secondary', 'Not on RUSP', 'Missing'], ordered=True)
-    elif category in ['inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard', 'severity_asqm', 'efficacy_asqm']:
-        # Move 'Missing' to the last position if present
-        categories_order = df[category].dropna().unique().tolist()
-        if 'Missing' in categories_order:
-            categories_order.append(categories_order.pop(categories_order.index('Missing')))
-        df[category] = pd.Categorical(df[category], categories=categories_order, ordered=True)
-
-    # After handling the data, proceed to plot
-    fig = px.bar(df, x=category, y='Number of Genes',
+    fig = px.bar(plot_data, x=category, y='Number of Genes',
+                 hover_data=['Genes'],
+                 labels={'index': category, 'Number of Genes': 'Number of Genes'},
                  title=title)
-    fig.update_layout(xaxis_title="", yaxis_title="Number of Genes" if show_yaxis_label else "")
+    fig.update_traces(marker_color='navy', hovertemplate="<br>".join([
+        "Category: %{x}",
+        "Number of Genes: %{y}",
+        "Genes: %{customdata[0]}"]))
+    
+    # Remove x-axis title
+    fig.update_layout(xaxis_title="")
+
+    # Conditionally show y-axis title based on the show_yaxis_label flag
+    yaxis_title = "Number of Genes" if show_yaxis_label else ""
+    fig.update_layout(yaxis_title=yaxis_title)
+
+    # Specific adjustment for the 'Age of Onset (ASQM)' graph
     if category == 'age_onset_asqm_standard':
         fig.update_xaxes(tickangle=45)
 
     return fig
 
-# Example usage within Streamlit layout
+# Specify columns where you want to account for missing data
+columns_to_account_for_missing = ['rusp', 'inheritance_babyseq2', 'severity_asqm', 'efficacy_asqm']
+
+# Preprocess the DataFrame to include 'Missing' as a category for the specified columns
+df_filtered = preprocess_for_missing_data(df_filtered, columns_to_account_for_missing)
+
+# Arrange plots in a 2x3 grid using Streamlit columns
 for i in range(0, len(categories), 3):
     cols = st.columns(3)
     for j, col in enumerate(cols):
@@ -272,6 +291,9 @@ for i in range(0, len(categories), 3):
         if idx < len(categories):
             category = categories[idx]
             title = custom_titles.get(category, category.replace("_", " ").title())
-            show_yaxis_label = (j == 0)  # Only show the y-axis label for the leftmost graph
+            
+            # Only show the y-axis label for the leftmost graph on both rows
+            show_yaxis_label = (j == 0)
+            
             fig = generate_individual_plots(df_filtered, category, title, show_yaxis_label)
             col.plotly_chart(fig, use_container_width=True)
