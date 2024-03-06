@@ -240,17 +240,8 @@ custom_titles = {
     'efficacy_asqm': 'Efficacy (ASQM)'
 }
 
-def preprocess_for_missing_data(df, columns):
-    """
-    Adjust specified columns in the DataFrame to include 'Missing' as a category
-    for NaN (empty) cells.
-    """
-    for column in columns:
-        df[column] = df[column].fillna('Missing')
-    return df
-
 def generate_individual_plots(df, category, title, show_yaxis_label):
-    if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard']:
+    if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard', 'severity_asqm']:
         # Ensure 'Missing' is recognized for each category and treated accordingly
         df[category] = df[category].fillna('Missing')
 
@@ -264,16 +255,20 @@ def generate_individual_plots(df, category, title, show_yaxis_label):
         elif category == 'orthogonal_test_goldetaldet':
             order = ['Y', 'N', 'Missing']
         elif category == 'age_onset_asqm_standard':
-            # Adjust the order list based on your actual data categories for age_onset_asqm_standard
             order = df[category].unique().tolist()
             if 'Missing' in order:
                 order.remove('Missing')
             order += ['Missing']  # Ensuring 'Missing' is the last category
-            df[category] = df[category].replace({'missing': 'Missing', 'Childhood': 'Child', 'Adolescent/Adult': 'Adult', 'Missing': 'Missing'})
-        
+        elif category == 'severity_asqm':
+            # Map numerical values to labels and ensure 'Missing' is placed last
+            severity_mapping = {'0': 'Missing', '1': 'Mild', '2': 'Moderate', '3': 'Severe'}
+            df[category] = df[category].map(severity_mapping).fillna('Missing')
+            order = ['Mild', 'Moderate', 'Severe', 'Missing']
+
         df[category] = pd.Categorical(df[category], categories=order, ordered=True)
         gene_counts = df[category].value_counts().reindex(order).fillna(0)
         
+        # Create the plot for categories with special handling
         fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values,
                      title=title, labels={'y': 'Number of Genes'})
     else:
