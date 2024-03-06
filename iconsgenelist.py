@@ -159,7 +159,6 @@ st.sidebar.header('Severity of Disease (ASQM)')
 severity_severe = st.sidebar.checkbox('Severe', value=False, key='severity_severe_key')
 severity_moderate = st.sidebar.checkbox('Moderate', value=False, key='severity_moderate_key')
 severity_mild = st.sidebar.checkbox('Mild', value=False, key='severity_mild_key')
-severity_no_symptoms = st.sidebar.checkbox('No symptoms', value=False, key='severity_no_symptoms_key')
 severity_missing = st.sidebar.checkbox('Missing', value=False, key='severity_missing_key')
 
 # Apply Severity filter
@@ -170,10 +169,8 @@ if severity_moderate:
     severity_conditions.append("severity_asqm == 2")
 if severity_mild:
     severity_conditions.append("severity_asqm == 1")
-if severity_no_symptoms:
-    severity_conditions.append("severity_asqm == 0")
 if severity_missing:
-    severity_conditions.append("severity_asqm.isna()")
+    severity_conditions.append("severity_asqm == 0")
 
 df_filtered = df_filtered.query(" or ".join(severity_conditions)) if severity_conditions else df_filtered
 
@@ -184,8 +181,7 @@ st.sidebar.header('Efficacy of Treatment')
 efficacy_high = st.sidebar.checkbox('High efficacy', value=False, key='efficacy_high_key')
 efficacy_moderate = st.sidebar.checkbox('Moderate efficacy', value=False, key='efficacy_moderate_key')
 efficacy_minimal = st.sidebar.checkbox('Minimal efficacy', value=False, key='efficacy_minimal_key')
-efficacy_no_treatment = st.sidebar.checkbox('No treatment', value=False, key='efficacy_no_treatment_key')
-efficacy_missing = st.sidebar.checkbox('Missing', value=False, key='efficacy_missing_key')
+efficacy_missing = st.sidebar.checkbox('No treatment', value=False, key='efficacy_missing_key')
 
 # Apply Efficacy of Treatment filter
 efficacy_conditions = []
@@ -195,10 +191,8 @@ if efficacy_moderate:
     efficacy_conditions.append("efficacy_asqm == 2")
 if efficacy_minimal:
     efficacy_conditions.append("efficacy_asqm == 1")
-if efficacy_no_treatment:
-    efficacy_conditions.append("efficacy_asqm == 0")
 if efficacy_missing:
-    efficacy_conditions.append("efficacy_asqm.isna()")
+    efficacy_conditions.append("efficacy_asqm == 0")
 
 df_filtered = df_filtered.query(" or ".join(efficacy_conditions)) if efficacy_conditions else df_filtered
 
