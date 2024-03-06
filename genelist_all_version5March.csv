@@ -499,7 +499,7 @@ PC,"Pyruvate carboxylase deficiency, MIM# 266150",Metabolism,6,,,1,1,,,,,,,1,,,1
 AAAS,Achalasia-addisonianism-alacrimia   syndrome,Endocrinology,6,,,1,1,,,,,1,,,,,,,,,1,,,,,1,,1,,,AR,HIGH (A),missing,0,0,0,0,0,1,,N
 PLG,"Plasminogen deficiency, type I",Ophthalmology,6,,,1,1,,,,1,,,,,,1,,,1,1,,,,,,,,,,AR,HIGH (A),missing,0,0,0,0,0,0,.16,Y
 GJB3,"Deafness, Autosomal Dominant 2B; Dfna2B",ENT,6,,,,,,,,,,1,,,,,1,1,1,,1,1,,,,,,,,,,missing,0,0,0,0,0,,,missing
-GNAS,GNAS associated Pseudohypoparathyroidism,Endocrinology,6,,1,1,1,,,,,,,,,1,,1,,,1,,,,,,,,,,IMP,HIGH (A),missing,0,0,0,0,0,1,.7,Y
+GNAS,GNAS associated Pseudohypoparathyroidism,Endocrinology,6,,1,1,1,,,,,,,,,1,,1,,,1,,,,,,,,,,,HIGH (A),missing,0,0,0,0,0,1,.7,Y
 FOXE1,Bamforth-Lazarus syndrome,Endocrinology,6,,1,1,,,,,,1,,1,,,,1,,,1,,,,,,,,,,,,Birth,2,3,2,3,1,0,,Y
 CFD,Complement factor D deficiency,Immunology,6,,,1,,1,,,1,1,,,,,,,,,1,1,,,,,,,,,,,missing,0,0,0,0,0,0,unk,Y
 DNAJC21,Bone marrow failure syndrome 3,Hematology,6,,1,1,,,,,,1,,,,,,,,,1,,,,,,1,1,,,,,missing,0,0,0,0,0,1,1.3,N
@@ -924,7 +924,7 @@ TCOF1,Treacher Collins syndrome 1,Medical Genetics,3,,,,1,,,,,,,,,1,,,,1,,,,,,,,
 RPS6KA3,Coffin-Lowry syndrome,Medical Genetics,3,,,,1,,,,,,,,,1,1,,,,,,,,,,,,,,XLD,HIGH (A),missing,0,0,0,0,0,,,missing
 BCL11B,"Severe combined immune deficiency, SCID",Immunology,3,,,,,,,,,,1,,1,,,,1,,,,,,,,,,,,,,missing,0,0,0,0,0,,,missing
 UROD,Porphyria cutanea tarda,Hematology,3,,,,1,,,,,1,,,,,,,,1,,,,,,,,,,,AR,HIGH (A),missing,0,0,0,0,0,0,7.5,Y
-H19,Beckwith-Wiedemann Syndrome,Medical Genetics,3,,,,1,,,,,,,,,,1,1,,,,,,,,,,,,,IMP,HIGH (A),missing,0,0,0,0,0,,,missing
+H19,Beckwith-Wiedemann Syndrome,Medical Genetics,3,,,,1,,,,,,,,,,1,1,,,,,,,,,,,,,,HIGH (A),missing,0,0,0,0,0,,,missing
 MPZ,Charcot-Marie-Tooth disease,Neurology,3,,,,1,,,,,,,,,,1,,,1,,,,,,,,,,,AD,HIGH (A),missing,0,0,0,0,0,,,missing
 LAMA3,"Epidermolysis bullosa, junctional",Dermatology,3,,,,1,,,,,,,,,,1,,,1,,,,,,,,,,,AR,HIGH (A),missing,0,0,0,0,0,,,missing
 MKS1,Meckel syndrome,Medical Genetics,3,,,,1,,,,,,,,,,1,1,,,,,,,,,,,,,AR,HIGH (A),missing,0,0,0,0,0,,,missing

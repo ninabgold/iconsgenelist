@@ -228,62 +228,67 @@ custom_titles = {
     'efficacy_asqm': 'Efficacy (ASQM)'
 }
 
-def preprocess_for_missing_data(df, columns):
+def custom_category_order(category, plot_data):
     """
-    Adjust specified columns in the DataFrame to include 'Missing' as a category
-    for NaN (empty) cells.
+    Adjusts the order and naming of categories within plot_data based on the category.
+    This is a helper function to apply specific customizations to plot_data before plotting.
     """
-    for column in columns:
-        df[column] = df[column].fillna('Missing')
-    return df
+    if category == 'rusp':
+        plot_data[category] = plot_data[category].replace({'Missing': 'Not on RUSP'})
+        custom_order = ['Core', 'Secondary', 'Not on RUSP']
+    elif category == 'inheritance_babyseq2':
+        custom_order = plot_data[category].unique().tolist()
+        if 'Missing' in custom_order:
+            custom_order.remove('Missing')
+            custom_order.append('Missing')
+    elif category == 'orthogonal_test_goldetaldet':
+        plot_data[category] = plot_data[category].replace({'missing': 'Missing'})
+        custom_order = ['Y', 'N', 'Missing']
+    elif category == 'age_onset_asqm_standard':
+        plot_data[category] = plot_data[category].replace({'missing': 'Missing', 'Childhood': 'Child', 'Adolescent/Adult': 'Adult'})
+        custom_order = plot_data[category].unique().tolist()
+        for special_order in ['Variable', 'Missing']:
+            if special_order in custom_order:
+                custom_order.remove(special_order)
+        custom_order += ['Variable', 'Missing']
+    elif category in ['severity_asqm', 'efficacy_asqm']:
+        renaming_dict = {'0': 'Missing', '1': 'Mild' if category == 'severity_asqm' else 'Minimal',
+                         '2': 'Moderate', '3': 'Severe' if category == 'severity_asqm' else 'High'}
+        plot_data[category] = plot_data[category].map(renaming_dict)
+        custom_order = [value for key, value in renaming_dict.items() if key in plot_data[category].unique()]
+    else:
+        custom_order = None
+    
+    if custom_order:
+        plot_data[category] = pd.Categorical(plot_data[category], categories=custom_order, ordered=True)
+        plot_data.sort_values(by=category, inplace=True)
+    
+    return plot_data
 
 def generate_individual_plots(df, category, title, show_yaxis_label):
     # Prepare data for plotting
-    gene_counts = df[category].value_counts().reset_index()
+    gene_counts = df[category].value_counts(dropna=False).reset_index()  # Include NaN in counts
     gene_counts.columns = [category, 'Number of Genes']
-
-    tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
+    
+    # Aggregate genes into lists grouped by the category for tooltips
+    tooltips = df.groupby(category, dropna=False)['gene'].apply(list).reset_index(name='Genes')
     plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
 
+    # Apply custom category ordering and renaming
+    plot_data = custom_category_order(category, plot_data)
+
+    # Create the plot
     fig = px.bar(plot_data, x=category, y='Number of Genes',
                  hover_data=['Genes'],
-                 labels={'index': category, 'Number of Genes': 'Number of Genes'},
+                 labels={'Number of Genes': 'Number of Genes'},
                  title=title)
     fig.update_traces(marker_color='navy', hovertemplate="<br>".join([
-        "Category: %{x}",
+        f"Category: %{{x}}",
         "Number of Genes: %{y}",
         "Genes: %{customdata[0]}"]))
     
-    # Remove x-axis title
-    fig.update_layout(xaxis_title="")
-
-    # Conditionally show y-axis title based on the show_yaxis_label flag
-    yaxis_title = "Number of Genes" if show_yaxis_label else ""
-    fig.update_layout(yaxis_title=yaxis_title)
-
-    # Specific adjustment for the 'Age of Onset (ASQM)' graph
+    fig.update_layout(xaxis_title="", yaxis_title="Number of Genes" if show_yaxis_label else "")
     if category == 'age_onset_asqm_standard':
         fig.update_xaxes(tickangle=45)
 
     return fig
-
-# Specify columns where you want to account for missing data
-columns_to_account_for_missing = ['rusp', 'inheritance_babyseq2', 'severity_asqm', 'efficacy_asqm']
-
-# Preprocess the DataFrame to include 'Missing' as a category for the specified columns
-df_filtered = preprocess_for_missing_data(df_filtered, columns_to_account_for_missing)
-
-# Arrange plots in a 2x3 grid using Streamlit columns
-for i in range(0, len(categories), 3):
-    cols = st.columns(3)
-    for j, col in enumerate(cols):
-        idx = i + j
-        if idx < len(categories):
-            category = categories[idx]
-            title = custom_titles.get(category, category.replace("_", " ").title())
-            
-            # Only show the y-axis label for the leftmost graph on both rows
-            show_yaxis_label = (j == 0)
-            
-            fig = generate_individual_plots(df_filtered, category, title, show_yaxis_label)
-            col.plotly_chart(fig, use_container_width=True)
