@@ -9,6 +9,8 @@ from plotly.subplots import make_subplots
 def load_data():
     return pd.read_csv('genelist_all_version5March.csv')
 
+
+
 df = load_data()
 
 st.title('Newborn screening gene selector')
@@ -248,33 +250,35 @@ def preprocess_for_missing_data(df, columns):
     return df
 
 def generate_individual_plots(df, category, title, show_yaxis_label):
-    # Prepare data for plotting
-    gene_counts = df[category].value_counts().reset_index()
-    gene_counts.columns = [category, 'Number of Genes']
+    if category == 'rusp':
+        # Special handling for 'rusp' category
+        df['rusp'] = df['rusp'].replace({'Missing': 'Not on RUSP'})
+        order = ['Core', 'Secondary', 'Not on RUSP']
+        df['rusp'] = pd.Categorical(df['rusp'], categories=order, ordered=True)
+        gene_counts = df['rusp'].value_counts().reindex(order).fillna(0)
+    else:
+        # General handling for other categories
+        gene_counts = df[category].value_counts().reset_index()
+        gene_counts.columns = [category, 'Number of Genes']
+        tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
+        plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
 
-    tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
-    plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
-
-    fig = px.bar(plot_data, x=category, y='Number of Genes',
-                 hover_data=['Genes'],
-                 labels={'index': category, 'Number of Genes': 'Number of Genes'},
-                 title=title)
+    # Plot generation
+    if category == 'rusp':
+        fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values,
+                     title=title, labels={'y': 'Number of Genes', 'index': 'RUSP Status'})
+    else:
+        fig = px.bar(plot_data, x=category, y='Number of Genes',
+                     hover_data=['Genes'],
+                     labels={'index': category, 'Number of Genes': 'Number of Genes'},
+                     title=title)
     fig.update_traces(marker_color='#D3D3D3', hovertemplate="<br>".join([
         "Category: %{x}",
         "Number of Genes: %{y}",
         "Genes: %{customdata[0]}"]))
-    
-    # Remove x-axis title
-    fig.update_layout(xaxis_title="")
-
-    # Conditionally show y-axis title based on the show_yaxis_label flag
-    yaxis_title = "Number of Genes" if show_yaxis_label else ""
-    fig.update_layout(yaxis_title=yaxis_title)
-
-    # Specific adjustment for the 'Age of Onset (ASQM)' graph
+    fig.update_layout(xaxis_title="", yaxis_title="Number of Genes" if show_yaxis_label else "")
     if category == 'age_onset_asqm_standard':
         fig.update_xaxes(tickangle=45)
-
     return fig
 
 # Specify columns where you want to account for missing data
@@ -283,17 +287,14 @@ columns_to_account_for_missing = ['rusp', 'inheritance_babyseq2', 'severity_asqm
 # Preprocess the DataFrame to include 'Missing' as a category for the specified columns
 df_filtered = preprocess_for_missing_data(df_filtered, columns_to_account_for_missing)
 
-# Arrange plots in a 2x3 grid using Streamlit columns
+# Generate and display plots
 for i in range(0, len(categories), 3):
     cols = st.columns(3)
     for j, col in enumerate(cols):
         idx = i + j
         if idx < len(categories):
             category = categories[idx]
-            title = custom_titles.get(category, category.replace("_", " ").title())
-            
-            # Only show the y-axis label for the leftmost graph on both rows
-            show_yaxis_label = (j == 0)
-            
+            title = custom_titles[category]
+            show_yaxis_label = (j == 0)  # Only show the y-axis label for the leftmost graph
             fig = generate_individual_plots(df_filtered, category, title, show_yaxis_label)
             col.plotly_chart(fig, use_container_width=True)
