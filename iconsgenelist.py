@@ -259,7 +259,7 @@ def generate_individual_plots(df, category, title, show_yaxis_label):
                  hover_data=['Genes'],
                  labels={'index': category, 'Number of Genes': 'Number of Genes'},
                  title=title)
-    fig.update_traces(marker_color='navy', hovertemplate="<br>".join([
+    fig.update_traces(marker_color='grey', hovertemplate="<br>".join([
         "Category: %{x}",
         "Number of Genes: %{y}",
         "Genes: %{customdata[0]}"]))
