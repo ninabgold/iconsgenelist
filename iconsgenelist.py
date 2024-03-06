@@ -12,6 +12,7 @@ df = load_data()
 st.title('Newborn Screening Gene Selector')
 
 # Define checkboxes in the sidebar before using them
+st.sidebar.header('US RUSP status')
 rusp_core = st.sidebar.checkbox('Core', value=False, key='rusp_core_key')
 rusp_secondary = st.sidebar.checkbox('Secondary', value=False, key='rusp_secondary_key')
 rusp_not_on_rusp = st.sidebar.checkbox('Not on RUSP', value=False, key='rusp_not_on_rusp_key')
