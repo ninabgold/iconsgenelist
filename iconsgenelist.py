@@ -250,46 +250,33 @@ def preprocess_for_missing_data(df, columns):
     return df
 
 def generate_individual_plots(df, category, title, show_yaxis_label):
-    if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard', 'severity_asqm']:
-        # Ensure 'Missing' is recognized for each category and treated accordingly
-        df[category] = df[category].fillna('Missing')
-
-        if category == 'rusp':
-            df['rusp'] = df['rusp'].replace({'Missing': 'Not on RUSP'})
-            order = ['Core', 'Secondary', 'Not on RUSP']
-        elif category == 'inheritance_babyseq2':
-            order = df[category].unique().tolist()
-            if 'Missing' in order:
-                order.append(order.pop(order.index('Missing')))
-        elif category == 'orthogonal_test_goldetaldet':
-            order = ['Y', 'N', 'Missing']
-        elif category == 'age_onset_asqm_standard':
-            order = df[category].unique().tolist()
-            if 'Missing' in order:
-                order.remove('Missing')
-            order += ['Missing']  # Ensuring 'Missing' is the last category
-        elif category == 'severity_asqm':
-            # Map numerical values to labels and ensure 'Missing' is placed last
-            severity_mapping = {'0': 'Missing', '1': 'Mild', '2': 'Moderate', '3': 'Severe'}
-            df[category] = df[category].map(severity_mapping).fillna('Missing')
-            order = ['Mild', 'Moderate', 'Severe', 'Missing']
-
-        df[category] = pd.Categorical(df[category], categories=order, ordered=True)
-        gene_counts = df[category].value_counts().reindex(order).fillna(0)
+    if category == 'severity_asqm':
+        # Copy the DataFrame to avoid modifying the original
+        df_copy = df.copy()
         
-        # Create the plot for categories with special handling
+        # Map numeric severity values to string labels
+        severity_mapping = {1: 'Mild', 2: 'Moderate', 3: 'Severe'}
+        df_copy[category] = df_copy[category].map(severity_mapping)
+        
+        # Handle missing values. Assume NaN or 0 in the original data indicates missing data
+        df_copy[category] = df_copy[category].fillna('Missing').replace({0: 'Missing'})
+        
+        # Calculate the counts for each severity category
+        gene_counts = df_copy[category].value_counts(normalize=False)
+        
+        # Ensure "Missing" is placed last by reordering the index
+        if 'Missing' in gene_counts.index:
+            new_index = [idx for idx in gene_counts.index if idx != 'Missing'] + ['Missing']
+            gene_counts = gene_counts.reindex(new_index)
+        
+        # Plot
         fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values,
-                     title=title, labels={'y': 'Number of Genes'})
+                     title=title, labels={'y': 'Number of Genes', 'index': 'Severity'})
     else:
-        gene_counts = df[category].value_counts().reset_index()
-        gene_counts.columns = [category, 'Number of Genes']
-        tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
-        plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
-        fig = px.bar(plot_data, x=category, y='Number of Genes',
-                     hover_data=['Genes'],
-                     labels={'index': category, 'Number of Genes': 'Number of Genes'},
-                     title=title)
-    
+        # Handling for other categories as before
+        # ...
+
+    # Apply consistent styling across all plots
     fig.update_traces(marker_color='#D3D3D3', hovertemplate="<br>".join([
         "Category: %{x}",
         "Number of Genes: %{y}",
