@@ -35,7 +35,7 @@ if rusp_not_on_rusp:
 df_filtered = df.query(" or ".join(query_string)) if query_string else df.copy()
 
 # Slider for number of screening programs
-num_programs = st.sidebar.slider('Number of screening programs that include gene', 1, 25, 1, key='num_programs_key')
+num_programs = st.sidebar.slider('Number of screening programs that include gene', 1, 26, 1, key='num_programs_key')
 
 # Further filter data based on number of programs
 df_filtered = df_filtered[df_filtered['scr_sum'] >= num_programs]
@@ -62,13 +62,13 @@ inheritance_missing = st.sidebar.checkbox('Missing', value=False, key='inheritan
 # Apply Inheritance filter
 inheritance_conditions = []
 if inheritance_ar:
-    inheritance_conditions.append("inheritance == 'AR'")
+    inheritance_conditions.append("inheritance_babyseq2 == 'AR'")
 if inheritance_ad:
-    inheritance_conditions.append("inheritance == 'AD'")
+    inheritance_conditions.append("inheritance_babyseq2 == 'AD'")
 if inheritance_xl:
-    inheritance_conditions.append("inheritance == 'XLR'")
+    inheritance_conditions.append("inheritance_babyseq2 == 'XLR'")
 if inheritance_missing:
-    inheritance_conditions.append("inheritance.isna()")
+    inheritance_conditions.append("inheritance_babyseq2.isna()")
 
 df_filtered = df_filtered.query(" or ".join(inheritance_conditions)) if inheritance_conditions else df_filtered
 
