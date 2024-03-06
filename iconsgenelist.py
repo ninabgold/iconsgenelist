@@ -221,7 +221,16 @@ categories = [
     'efficacy_asqm'                     # Efficacy of treatment
 ]
 
-# Function to generate and display bar graphs for each category
+# Custom titles for the plots
+custom_titles = {
+    'rusp': 'US RUSP status',
+    'inheritance_babyseq2': 'Inheritance',
+    'orthogonal_test_goldetaldet': 'Orthogonal test',
+    'age_onset_asqm_standard': 'Age of onset (ASQM)',
+    'severity_asqm': 'Severity (ASQM)',
+    'efficacy_asqm': 'Efficacy (ASQM)'
+}
+
 def generate_and_display_bar_graphs(df, categories):
     for category in categories:
         # Prepare data for plotting
@@ -232,19 +241,22 @@ def generate_and_display_bar_graphs(df, categories):
         tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
         plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
         
+        # Use the custom title for the current category
+        title = custom_titles.get(category, category.replace("_", " ").title())
+        
         # Plot
         fig = px.bar(plot_data, x=category, y='Number of Genes',
                      hover_data=['Genes'],
                      labels={'Genes': 'Included Genes'},
-                     title=f'{category.replace("_", " ").title()}')
+                     title=title)
         fig.update_traces(marker_color='navy', hovertemplate="<br>".join([
             "Category: %{x}",
             "Number of Genes: %{y}",
             "Genes: %{customdata[0]}"]))
-        fig.update_layout(xaxis_title=category.replace("_", " ").title(), yaxis_title="Number of Genes")
+        fig.update_layout(xaxis_title=title, yaxis_title="Number of Genes")
         
         # Display the figure
         st.plotly_chart(fig, use_container_width=True)
 
-# Assuming df_filtered is already defined and filtered based on the user's selections
+# Call the function to generate and display the bar graphs
 generate_and_display_bar_graphs(df_filtered, categories)
