@@ -18,9 +18,6 @@ st.sidebar.header('Filters')
 # Title for RUSP status checkboxes
 st.sidebar.header('US RUSP Status')
 
-# Initialize df_filtered with the full DataFrame as default
-df_filtered = df.copy()
-
 # Apply filters for 'Core' and 'Secondary' using query if those are selected
 if rusp_core or rusp_secondary:
     query_conditions = []
