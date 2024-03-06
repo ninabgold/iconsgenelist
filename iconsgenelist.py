@@ -77,7 +77,7 @@ if inheritance_ad:
 if inheritance_xlr:
     inheritance_conditions.append("inheritance_babyseq2 == 'XLR'")
 if inheritance_xld:
-    inheritance_conditions.append("inheritance_babyseq2 == 'XLD'")
+    inheritance_conditions.append("inheritance_babyseq2 == 'XL'")
 if inheritance_missing:
     inheritance_conditions.append("inheritance_babyseq2.isna()")
 
@@ -117,7 +117,7 @@ if orthogonal_yes:
 if orthogonal_no:
     orthogonal_conditions.append("orthogonal_test_goldetaldet == 'N'")
 if orthogonal_missing:
-    orthogonal_conditions.append("orthogonal_test_goldetaldet.isna()")
+    orthogonal_conditions.append("orthogonal_test_goldetaldet == 'missing'")
 
 df_filtered = df_filtered.query(" or ".join(orthogonal_conditions)) if orthogonal_conditions else df_filtered
 
