@@ -234,36 +234,32 @@ custom_titles = {
     'efficacy_asqm': 'Efficacy (ASQM)'
 }
 
-def generate_and_display_bar_graphs(df, categories):
-    # Define the layout of the subplots
-    fig = make_subplots(rows=2, cols=3, subplot_titles=[custom_titles[cat] for cat in categories])
-    
-    # Keep track of the subplot positions
-    subplot_positions = [(i, j) for i in range(1, 3) for j in range(1, 4)]
-    
-    for idx, category in enumerate(categories):
-        # Prepare data for plotting
-        gene_counts = df[category].value_counts().reset_index()
-        gene_counts.columns = [category, 'Number of Genes']
-        
-        # For tooltips, we aggregate genes into lists grouped by the category
-        tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
-        plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
-        
-        # Determine the position of the current subplot
-        row, col = subplot_positions[idx]
-        
-        # Create the bar plot for the current category and add it to the subplot
-        fig.add_trace(
-            go.Bar(x=plot_data[category], y=plot_data['Number of Genes'], 
-                   hoverinfo='text', hovertext=plot_data['Genes'], 
-                   marker_color='navy', name=custom_titles[category]),
-            row=row, col=col
-        )
-    
-    # Update layout for a cleaner look and set titles
-    fig.update_layout(height=600, width=1000, showlegend=False, 
-                      title_text="Filtered Data Analysis")
-    
-    # Display the figure
-    st.plotly_chart(fig, use_container_width=True)
+def generate_individual_plots(df, category, title):
+    gene_counts = df[category].value_counts().reset_index()
+    gene_counts.columns = [category, 'Number of Genes']
+
+    tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
+    plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
+
+    fig = px.bar(plot_data, x=category, y='Number of Genes',
+                 hover_data=['Genes'],
+                 labels={'index': category, 'Number of Genes': 'Number of Genes'},
+                 title=title)
+    fig.update_traces(marker_color='navy', hovertemplate="<br>".join([
+        "Category: %{x}",
+        "Number of Genes: %{y}",
+        "Genes: %{customdata[0]}"]))
+    fig.update_layout(xaxis_title=category, yaxis_title="Number of Genes")
+
+    return fig
+
+# Arrange plots in a 2x3 grid using Streamlit columns
+for i in range(0, len(categories), 3):
+    cols = st.columns(3)
+    for j, col in enumerate(cols):
+        idx = i + j
+        if idx < len(categories):
+            category = categories[idx]
+            title = custom_titles.get(category, category.replace("_", " ").title())
+            fig = generate_individual_plots(df_filtered, category, title)
+            col.plotly_chart(fig, use_container_width=True)
