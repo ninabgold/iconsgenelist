@@ -102,11 +102,11 @@ orthogonal_missing = st.sidebar.checkbox('Missing', value=False, key='orthogonal
 # Apply Orthogonal test filter
 orthogonal_conditions = []
 if orthogonal_yes:
-    orthogonal_conditions.append("orthogonal_test == 'Y'")
+    orthogonal_conditions.append("orthogonal_test_goldetaldet == 'Y'")
 if orthogonal_no:
-    orthogonal_conditions.append("orthogonal_test == 'N'")
+    orthogonal_conditions.append("orthogonal_test_goldetaldet == 'N'")
 if orthogonal_missing:
-    orthogonal_conditions.append("orthogonal_test.isna()")
+    orthogonal_conditions.append("orthogonal_test_goldetaldet.isna()")
 
 df_filtered = df_filtered.query(" or ".join(orthogonal_conditions)) if orthogonal_conditions else df_filtered
 
@@ -142,7 +142,7 @@ if age_onset_missing:
 df_filtered = df_filtered.query(" or ".join(age_onset_conditions)) if age_onset_conditions else df_filtered
 
 # Title for Severity of disease checkboxes
-st.sidebar.header('Severity of Disease')
+st.sidebar.header('Severity of Disease (ASQM)')
 
 # Checkboxes for Severity with unique keys
 severity_severe = st.sidebar.checkbox('Severe', value=False, key='severity_severe_key')
@@ -154,15 +154,15 @@ severity_missing = st.sidebar.checkbox('Missing', value=False, key='severity_mis
 # Apply Severity filter
 severity_conditions = []
 if severity_severe:
-    severity_conditions.append("severity == 3")
+    severity_conditions.append("severity_asqm == 3")
 if severity_moderate:
-    severity_conditions.append("severity == 2")
+    severity_conditions.append("severity_asqm == 2")
 if severity_mild:
-    severity_conditions.append("severity == 1")
+    severity_conditions.append("severity_asqm == 1")
 if severity_no_symptoms:
-    severity_conditions.append("severity == 0")
+    severity_conditions.append("severity_asqm == 0")
 if severity_missing:
-    severity_conditions.append("severity.isna()")
+    severity_conditions.append("severity_asqm.isna()")
 
 df_filtered = df_filtered.query(" or ".join(severity_conditions)) if severity_conditions else df_filtered
 
@@ -179,15 +179,15 @@ efficacy_missing = st.sidebar.checkbox('Missing', value=False, key='efficacy_mis
 # Apply Efficacy of Treatment filter
 efficacy_conditions = []
 if efficacy_high:
-    efficacy_conditions.append("efficacy == 3")
+    efficacy_conditions.append("efficacy_asqm == 3")
 if efficacy_moderate:
-    efficacy_conditions.append("efficacy == 2")
+    efficacy_conditions.append("efficacy_asqm == 2")
 if efficacy_minimal:
-    efficacy_conditions.append("efficacy == 1")
+    efficacy_conditions.append("efficacy_asqm == 1")
 if efficacy_no_treatment:
-    efficacy_conditions.append("efficacy == 0")
+    efficacy_conditions.append("efficacy_asqm == 0")
 if efficacy_missing:
-    efficacy_conditions.append("efficacy.isna()")
+    efficacy_conditions.append("efficacy_asqm.isna()")
 
 df_filtered = df_filtered.query(" or ".join(efficacy_conditions)) if efficacy_conditions else df_filtered
 
@@ -203,12 +203,12 @@ st.markdown(genes_html, unsafe_allow_html=True)
 # Assuming df_filtered is your DataFrame filtered according to the user's selections.
 
 categories = [
-    'rusp',                # RUSP status
-    'inheritance',         # Inheritance pattern
-    'orthogonal_test',     # Orthogonal test
-    'age_onset_asqm_standard', # Age of onset
-    'severity',            # Severity of disease
-    'efficacy'             # Efficacy of treatment
+    'rusp',                             # RUSP status
+    'inheritance_babyseq',              # Inheritance pattern
+    'orthogonal_test_goldetaldet',      # Orthogonal test
+    'age_onset_asqm_standard',          # Age of onset
+    'severity_asqm',                    # Severity of disease
+    'efficacy_asqm'                     # Efficacy of treatment
 ]
 
 # Function to generate and display bar graphs for each category
