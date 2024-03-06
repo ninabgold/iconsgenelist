@@ -208,7 +208,7 @@ filtered_genes_diseases.columns = ['Gene', 'Disease']
 filtered_genes_diseases.index = range(1, len(filtered_genes_diseases) + 1)
 
 # Display as a table in Streamlit, now with updated index and column names
-st.write("Filtered Genes and Corresponding Diseases", filtered_genes_diseases)
+st.write("Filtered genes and corresponding diseases", filtered_genes_diseases)
 
 categories = [
     'rusp',                             # RUSP status
