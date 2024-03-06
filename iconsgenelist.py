@@ -273,10 +273,15 @@ def generate_individual_plots(df, category, title, show_yaxis_label):
         fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values,
                      title=title, labels={'y': 'Number of Genes', 'index': 'Severity'})
     else:
-        # Handling for other categories as before
-        # ...
-
-    # Apply consistent styling across all plots
+        gene_counts = df[category].value_counts().reset_index()
+        gene_counts.columns = [category, 'Number of Genes']
+        tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
+        plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
+        fig = px.bar(plot_data, x=category, y='Number of Genes',
+                     hover_data=['Genes'],
+                     labels={'index': category, 'Number of Genes': 'Number of Genes'},
+                     title=title)
+    
     fig.update_traces(marker_color='#D3D3D3', hovertemplate="<br>".join([
         "Category: %{x}",
         "Number of Genes: %{y}",
