@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 # Use st.cache_data to cache the data loading function
 @st.cache_data
@@ -221,28 +223,45 @@ categories = [
 
 # Function to generate and display bar graphs for each category
 def generate_and_display_bar_graphs(df, categories):
+    # Define custom titles for the plots
+    titles = {
+        'rusp': 'US RUSP status',
+        'inheritance_babyseq2': 'Inheritance',
+        'orthogonal_test_goldetaldet': 'Orthogonal test',
+        'age_onset_asqm_standard': 'Age of onset (ASQM)',
+        'severity_asqm': 'Severity (ASQM)',
+        'efficacy_asqm': 'Efficacy (ASQM)'
+    }
+    
+    # Create subplot figure with 2 rows and 3 columns
+    fig = make_subplots(rows=2, cols=3, subplot_titles=[titles[category] for category in categories])
+    
+    # Keep track of the current plot position
+    row, col = 1, 1
     for category in categories:
-        # Prepare data for plotting
         gene_counts = df[category].value_counts().reset_index()
         gene_counts.columns = [category, 'Number of Genes']
         
-        # For tooltips, we aggregate genes into lists grouped by the category
         tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
         plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
         
-        # Plot
-        fig = px.bar(plot_data, x=category, y='Number of Genes',
-                     hover_data=['Genes'],
-                     labels={'Genes': 'Included Genes'},
-                     title=f'{category.replace("_", " ").title()}')
-        fig.update_traces(marker_color='navy', hovertemplate="<br>".join([
-            "Category: %{x}",
-            "Number of Genes: %{y}",
-            "Genes: %{customdata[0]}"]))
-        fig.update_layout(xaxis_title=category.replace("_", " ").title(), yaxis_title="Number of Genes")
+        # Create the bar plot for the current category
+        fig.add_trace(
+            go.Bar(x=plot_data[category], y=plot_data['Number of Genes'], hoverinfo='text',
+                   hovertext=plot_data['Genes'], marker_color='navy'),
+            row=row, col=col
+        )
         
-        # Display the figure
-        st.plotly_chart(fig, use_container_width=True)
-
-# Assuming df_filtered is already defined and filtered based on the user's selections
-generate_and_display_bar_graphs(df_filtered, categories)
+        # Update row and col indices for the next plot
+        col += 1
+        if col > 3:
+            col = 1
+            row += 1
+    
+    # Update layout for a cleaner look
+    fig.update_layout(height=800, width=1200, showlegend=False, title_text="Filtered Data Analysis")
+    fig.update_xaxes(title_text="Category")
+    fig.update_yaxes(title_text="Number of Genes")
+    
+    # Display the figure
+    st.plotly_chart(fig)
