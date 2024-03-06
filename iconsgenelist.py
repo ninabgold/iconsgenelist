@@ -257,6 +257,10 @@ def generate_individual_plots(df, category, title, show_yaxis_label):
     yaxis_title = "Number of Genes" if show_yaxis_label else ""
     fig.update_layout(yaxis_title=yaxis_title)
 
+        # Specific adjustment for the 'Age of Onset (ASQM)' graph
+    if category == 'age_onset_asqm_standard':
+        fig.update_xaxes(tickangle=45)
+
     return fig
 
 # Arrange plots in a 2x3 grid using Streamlit columns
