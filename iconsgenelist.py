@@ -265,3 +265,5 @@ def generate_and_display_bar_graphs(df, categories):
     
     # Display the figure
     st.plotly_chart(fig)
+
+    generate_and_display_bar_graphs(df_filtered, categories)
