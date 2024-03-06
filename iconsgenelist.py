@@ -240,6 +240,15 @@ custom_titles = {
     'efficacy_asqm': 'Efficacy (ASQM)'
 }
 
+def preprocess_for_missing_data(df, columns):
+    """
+    Adjust specified columns in the DataFrame to include 'Missing' as a category
+    for NaN (empty) cells.
+    """
+    for column in columns:
+        df[column] = df[column].fillna('Missing')
+    return df
+
 def generate_individual_plots(df, category, title, show_yaxis_label):
     if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard', 'severity_asqm']:
         # Ensure 'Missing' is recognized for each category and treated accordingly
