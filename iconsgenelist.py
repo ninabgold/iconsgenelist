@@ -229,40 +229,57 @@ custom_titles = {
     'efficacy_asqm': 'Efficacy (ASQM)'
 }
 
-def generate_individual_plots(df, category, title, show_yaxis_label=True):
+def generate_individual_plots(df, category, title, show_yaxis_label):
     df_copy = df.copy()
 
-    # Handle each category specifically
+    # RUSP status adjustments
     if category == 'rusp':
-        df_copy['rusp'] = df_copy['rusp'].replace({'Missing': 'Not on RUSP'})
+        df_copy['rusp'] = df_copy['rusp'].fillna('Missing').replace({'Missing': 'Not on RUSP'})
         order = ['Core', 'Secondary', 'Not on RUSP']
+        df_copy['rusp'] = pd.Categorical(df_copy['rusp'], categories=order, ordered=True)
+    
+    # Inheritance adjustments
     elif category == 'inheritance_babyseq2':
-        order = df_copy[category].unique().tolist()
+        df_copy['inheritance_babyseq2'] = df_copy['inheritance_babyseq2'].fillna('Missing')
+        order = df_copy['inheritance_babyseq2'].unique().tolist()
         if 'Missing' in order:
             order.remove('Missing')
         order.append('Missing')
+        df_copy['inheritance_babyseq2'] = pd.Categorical(df_copy['inheritance_babyseq2'], categories=order, ordered=True)
+
+    # Orthogonal testing adjustments
     elif category == 'orthogonal_test_goldetaldet':
+        df_copy['orthogonal_test_goldetaldet'] = df_copy['orthogonal_test_goldetaldet'].fillna('Missing').replace({'missing': 'Missing'})
         order = ['Y', 'N', 'Missing']
+        df_copy['orthogonal_test_goldetaldet'] = pd.Categorical(df_copy['orthogonal_test_goldetaldet'], categories=order, ordered=True)
+
+    # Age of Onset adjustments
     elif category == 'age_onset_asqm_standard':
+        df_copy['age_onset_asqm_standard'] = df_copy['age_onset_asqm_standard'].fillna('Missing')
+        order = df_copy['age_onset_asqm_standard'].unique().tolist()
+        if 'Missing' in order:
+            order.remove('Missing')
+        # Customize order based on your requirements, ensuring 'Missing' is last
         custom_order = ['Birth', 'Neonatal', 'Infant', 'Child', 'Adult', 'Variable', 'Missing']
-        order = custom_order
+        df_copy['age_onset_asqm_standard'] = pd.Categorical(df_copy['age_onset_asqm_standard'], categories=custom_order, ordered=True)
+
+    # Severity adjustments
     elif category == 'severity_asqm':
         severity_mapping = {1: 'Mild', 2: 'Moderate', 3: 'Severe', 0: 'Missing'}
-        df_copy[category] = df_copy[category].map(severity_mapping).fillna('Missing')
+        df_copy['severity_asqm'] = df_copy['severity_asqm'].map(severity_mapping).fillna('Missing')
         order = ['Mild', 'Moderate', 'Severe', 'Missing']
-    elif category == 'efficacy_asqm':
-        efficacy_mapping = {1: 'Minimal', 2: 'Moderate', 3: 'High', 0: 'Missing'}
-        df_copy[category] = df_copy[category].map(efficacy_mapping).fillna('Missing')
-        order = ['Minimal', 'Moderate', 'High', 'Missing']
-
-    df_copy[category] = pd.Categorical(df_copy[category], categories=order, ordered=True)
-    gene_counts = df_copy[category].value_counts().reindex(order).fillna(0)
+        df_copy['severity_asqm'] = pd.Categorical(df_copy['severity_asqm'], categories=order, ordered=True)
 
     # Generate the plot
-    fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values, title=title)
-    fig.update_traces(marker_color='#D3D3D3')
-    fig.update_layout(xaxis_title="", yaxis_title="Number of Genes" if show_yaxis_label else "", showlegend=False)
-    if category in ['age_onset_asqm_standard']:
+    gene_counts = df_copy[category].value_counts().reindex(df_copy[category].cat.categories)
+    fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values,
+                 title=title, labels={'y': 'Number of Genes'})
+    fig.update_traces(marker_color='#D3D3D3', hovertemplate="<br>".join([
+        "Category: %{x}",
+        "Number of Genes: %{y}",
+        "Genes: %{customdata[0]}"]))
+    fig.update_layout(xaxis_title="", yaxis_title="Number of Genes" if show_yaxis_label else "")
+    if category == 'age_onset_asqm_standard':
         fig.update_xaxes(tickangle=45)
 
     return fig
