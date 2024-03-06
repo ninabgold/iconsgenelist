@@ -249,17 +249,8 @@ def generate_individual_plots(df, category, title):
         "Category: %{x}",
         "Number of Genes: %{y}",
         "Genes: %{customdata[0]}"]))
-    fig.update_layout(xaxis_title=category, yaxis_title="Number of Genes")
+    
+    # Set the xaxis_title to an empty string to remove it
+    fig.update_layout(xaxis_title="", yaxis_title="Number of Genes")
 
     return fig
-
-# Arrange plots in a 2x3 grid using Streamlit columns
-for i in range(0, len(categories), 3):
-    cols = st.columns(3)
-    for j, col in enumerate(cols):
-        idx = i + j
-        if idx < len(categories):
-            category = categories[idx]
-            title = custom_titles.get(category, category.replace("_", " ").title())
-            fig = generate_individual_plots(df_filtered, category, title)
-            col.plotly_chart(fig, use_container_width=True)
