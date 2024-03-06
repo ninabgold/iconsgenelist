@@ -228,67 +228,50 @@ custom_titles = {
     'efficacy_asqm': 'Efficacy (ASQM)'
 }
 
-def custom_category_order(category, plot_data):
-    """
-    Adjusts the order and naming of categories within plot_data based on the category.
-    This is a helper function to apply specific customizations to plot_data before plotting.
-    """
-    if category == 'rusp':
-        plot_data[category] = plot_data[category].replace({'Missing': 'Not on RUSP'})
-        custom_order = ['Core', 'Secondary', 'Not on RUSP']
-    elif category == 'inheritance_babyseq2':
-        custom_order = plot_data[category].unique().tolist()
-        if 'Missing' in custom_order:
-            custom_order.remove('Missing')
-            custom_order.append('Missing')
-    elif category == 'orthogonal_test_goldetaldet':
-        plot_data[category] = plot_data[category].replace({'missing': 'Missing'})
-        custom_order = ['Y', 'N', 'Missing']
-    elif category == 'age_onset_asqm_standard':
-        plot_data[category] = plot_data[category].replace({'missing': 'Missing', 'Childhood': 'Child', 'Adolescent/Adult': 'Adult'})
-        custom_order = plot_data[category].unique().tolist()
-        for special_order in ['Variable', 'Missing']:
-            if special_order in custom_order:
-                custom_order.remove(special_order)
-        custom_order += ['Variable', 'Missing']
-    elif category in ['severity_asqm', 'efficacy_asqm']:
-        renaming_dict = {'0': 'Missing', '1': 'Mild' if category == 'severity_asqm' else 'Minimal',
-                         '2': 'Moderate', '3': 'Severe' if category == 'severity_asqm' else 'High'}
-        plot_data[category] = plot_data[category].map(renaming_dict)
-        custom_order = [value for key, value in renaming_dict.items() if key in plot_data[category].unique()]
-    else:
-        custom_order = None
-    
-    if custom_order:
-        plot_data[category] = pd.Categorical(plot_data[category], categories=custom_order, ordered=True)
-        plot_data.sort_values(by=category, inplace=True)
-    
-    return plot_data
 
 def generate_individual_plots(df, category, title, show_yaxis_label):
-    # Prepare data for plotting
-    gene_counts = df[category].value_counts(dropna=False).reset_index()  # Include NaN in counts
-    gene_counts.columns = [category, 'Number of Genes']
-    
-    # Aggregate genes into lists grouped by the category for tooltips
-    tooltips = df.groupby(category, dropna=False)['gene'].apply(list).reset_index(name='Genes')
-    plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
+    # Copy df to avoid altering original df outside this function
+    df = df.copy()
 
-    # Apply custom category ordering and renaming
-    plot_data = custom_category_order(category, plot_data)
+    # Handle 'Missing' data and specific category adjustments
+    if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'severity_asqm', 'efficacy_asqm']:
+        df[category] = df[category].fillna('Missing')
+    if category == 'orthogonal_test_goldetaldet':
+        df[category] = df[category].replace({'missing': 'Missing', 'y': 'Y', 'n': 'N'})
+    if category == 'age_onset_asqm_standard':
+        df[category] = df[category].replace({'missing': 'Missing', 'Childhood': 'Child', 'Adolescent/Adult': 'Adult'})
+    if category == 'severity_asqm':
+        df[category] = df[category].map({'0': 'Missing', '1': 'Mild', '2': 'Moderate', '3': 'Severe'})
+    if category == 'efficacy_asqm':
+        df[category] = df[category].map({'0': 'Missing', '1': 'Minimal', '2': 'Moderate', '3': 'High'})
 
-    # Create the plot
-    fig = px.bar(plot_data, x=category, y='Number of Genes',
-                 hover_data=['Genes'],
-                 labels={'Number of Genes': 'Number of Genes'},
+    # Ensure custom ordering is applied for 'Missing' data and other specified categories
+    if category == 'rusp':
+        df[category] = pd.Categorical(df[category], categories=['Core', 'Secondary', 'Not on RUSP', 'Missing'], ordered=True)
+    elif category in ['inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard', 'severity_asqm', 'efficacy_asqm']:
+        # Move 'Missing' to the last position if present
+        categories_order = df[category].dropna().unique().tolist()
+        if 'Missing' in categories_order:
+            categories_order.append(categories_order.pop(categories_order.index('Missing')))
+        df[category] = pd.Categorical(df[category], categories=categories_order, ordered=True)
+
+    # After handling the data, proceed to plot
+    fig = px.bar(df, x=category, y='Number of Genes',
                  title=title)
-    fig.update_traces(marker_color='navy', hovertemplate="<br>".join([
-        f"Category: %{{x}}",
-        "Number of Genes: %{y}",
-        "Genes: %{customdata[0]}"]))
-    
     fig.update_layout(xaxis_title="", yaxis_title="Number of Genes" if show_yaxis_label else "")
     if category == 'age_onset_asqm_standard':
         fig.update_xaxes(tickangle=45)
 
     return fig
+
+# Example usage within Streamlit layout
+for i in range(0, len(categories), 3):
+    cols = st.columns(3)
+    for j, col in enumerate(cols):
+        idx = i + j
+        if idx < len(categories):
+            category = categories[idx]
+            title = custom_titles.get(category, category.replace("_", " ").title())
+            show_yaxis_label = (j == 0)  # Only show the y-axis label for the leftmost graph
+            fig = generate_individual_plots(df_filtered, category, title, show_yaxis_label)
+            col.plotly_chart(fig, use_container_width=True)
