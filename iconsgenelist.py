@@ -83,11 +83,11 @@ penetrance_missing = st.sidebar.checkbox('Missing', value=False, key='penetrance
 # Apply Penetrance filter
 penetrance_conditions = []
 if penetrance_high:
-    penetrance_conditions.append("penetrance == 'HIGH (A)'")
+    penetrance_conditions.append("penetrance_babyseq2 == 'HIGH (A)'")
 if penetrance_moderate:
-    penetrance_conditions.append("penetrance == 'MODERATE(A)'")
+    penetrance_conditions.append("penetrance_babyseq2 == 'MODERATE(A)'")
 if penetrance_missing:
-    penetrance_conditions.append("penetrance.isna()")
+    penetrance_conditions.append("penetrance_babyseq2.isna()")
 
 df_filtered = df_filtered.query(" or ".join(penetrance_conditions)) if penetrance_conditions else df_filtered
 
