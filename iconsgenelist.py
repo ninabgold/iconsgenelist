@@ -250,8 +250,7 @@ def preprocess_for_missing_data(df, columns):
     return df
 
 def generate_individual_plots(df, category, title, show_yaxis_label):
-    # Apply special handling for 'rusp', 'inheritance_babyseq2', and 'orthogonal_test_goldetaldet' categories
-    if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet']:
+    if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard']:
         # Ensure 'Missing' is recognized for each category and treated accordingly
         df[category] = df[category].fillna('Missing')
 
@@ -259,22 +258,25 @@ def generate_individual_plots(df, category, title, show_yaxis_label):
             df['rusp'] = df['rusp'].replace({'Missing': 'Not on RUSP'})
             order = ['Core', 'Secondary', 'Not on RUSP']
         elif category == 'inheritance_babyseq2':
-            # Adjust the order list based on your actual data categories for inheritance_babyseq2
             order = df[category].unique().tolist()
             if 'Missing' in order:
-                order.append(order.pop(order.index('Missing')))  # Move 'Missing' to the end
+                order.append(order.pop(order.index('Missing')))
         elif category == 'orthogonal_test_goldetaldet':
-            # For orthogonal_test_goldetaldet, explicitly set the order to include 'Y', 'N', and 'Missing'
             order = ['Y', 'N', 'Missing']
+        elif category == 'age_onset_asqm_standard':
+            # Adjust the order list based on your actual data categories for age_onset_asqm_standard
+            order = df[category].unique().tolist()
+            if 'Missing' in order:
+                order.remove('Missing')
+            order += ['Missing']  # Ensuring 'Missing' is the last category
+            df[category] = df[category].replace({'missing': 'Missing', 'Childhood': 'Child', 'Adolescent/Adult': 'Adult', 'Missing': 'Missing'})
         
         df[category] = pd.Categorical(df[category], categories=order, ordered=True)
         gene_counts = df[category].value_counts().reindex(order).fillna(0)
         
-        # Create the plot for categories with special handling
         fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values,
                      title=title, labels={'y': 'Number of Genes'})
     else:
-        # General handling for other categories
         gene_counts = df[category].value_counts().reset_index()
         gene_counts.columns = [category, 'Number of Genes']
         tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
