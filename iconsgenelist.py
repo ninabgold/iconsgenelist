@@ -234,7 +234,7 @@ custom_titles = {
     'efficacy_asqm': 'Efficacy (ASQM)'
 }
 
-def generate_individual_plots(df, category, title):
+def generate_individual_plots(df, category, title, show_yaxis_label):
     gene_counts = df[category].value_counts().reset_index()
     gene_counts.columns = [category, 'Number of Genes']
 
@@ -250,7 +250,26 @@ def generate_individual_plots(df, category, title):
         "Number of Genes: %{y}",
         "Genes: %{customdata[0]}"]))
     
-    # Set the xaxis_title to an empty string to remove it
-    fig.update_layout(xaxis_title="", yaxis_title="Number of Genes")
+    # Remove x-axis title
+    fig.update_layout(xaxis_title="")
+    
+    # Conditionally show y-axis title based on the show_yaxis_label flag
+    yaxis_title = "Number of Genes" if show_yaxis_label else ""
+    fig.update_layout(yaxis_title=yaxis_title)
 
     return fig
+
+# Arrange plots in a 2x3 grid using Streamlit columns
+for i in range(0, len(categories), 3):
+    cols = st.columns(3)
+    for j, col in enumerate(cols):
+        idx = i + j
+        if idx < len(categories):
+            category = categories[idx]
+            title = custom_titles.get(category, category.replace("_", " ").title())
+            
+            # Only show the y-axis label for the leftmost graph on both rows
+            show_yaxis_label = (j == 0)
+            
+            fig = generate_individual_plots(df_filtered, category, title, show_yaxis_label)
+            col.plotly_chart(fig, use_container_width=True)
