@@ -267,3 +267,6 @@ def generate_and_display_bar_graphs(df, categories):
     st.plotly_chart(fig)
 
     generate_and_display_bar_graphs(df_filtered, categories)
+
+    fig = px.bar(df_filtered.head(), x='gene', y='name_disease')
+st.plotly_chart(fig)
