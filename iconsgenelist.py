@@ -250,24 +250,32 @@ def preprocess_for_missing_data(df, columns):
     return df
 
 def generate_individual_plots(df, category, title, show_yaxis_label):
-    if category == 'rusp':
-        # Special handling for 'rusp' category
-        df['rusp'] = df['rusp'].replace({'Missing': 'Not on RUSP'})
-        order = ['Core', 'Secondary', 'Not on RUSP']
-        df['rusp'] = pd.Categorical(df['rusp'], categories=order, ordered=True)
-        gene_counts = df['rusp'].value_counts().reindex(order).fillna(0)
+    if category in ['rusp', 'inheritance_babyseq2']:
+        # Special handling for 'rusp' and 'inheritance_babyseq2' categories
+        if category == 'rusp':
+            df['rusp'] = df['rusp'].replace({'Missing': 'Not on RUSP'})
+            order = ['Core', 'Secondary', 'Not on RUSP']
+            df['rusp'] = pd.Categorical(df['rusp'], categories=order, ordered=True)
+            gene_counts = df['rusp'].value_counts().reindex(order).fillna(0)
+        elif category == 'inheritance_babyseq2':
+            # Ensure 'Missing' is recognized and move it to the last position
+            df[category] = df[category].fillna('Missing')
+            # You might need to adjust the order list based on your actual data categories
+            order = df[category].unique().tolist()
+            if 'Missing' in order:
+                order.append(order.pop(order.index('Missing')))  # Move 'Missing' to the end
+            df[category] = pd.Categorical(df[category], categories=order, ordered=True)
+            gene_counts = df[category].value_counts().reindex(order).fillna(0)
+        
+        # Create the plot for 'rusp' or 'inheritance_babyseq2'
+        fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values,
+                     title=title, labels={'y': 'Number of Genes'})
     else:
         # General handling for other categories
         gene_counts = df[category].value_counts().reset_index()
         gene_counts.columns = [category, 'Number of Genes']
         tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
         plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
-
-    # Plot generation
-    if category == 'rusp':
-        fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values,
-                     title=title, labels={'y': 'Number of Genes', 'index': 'RUSP Status'})
-    else:
         fig = px.bar(plot_data, x=category, y='Number of Genes',
                      hover_data=['Genes'],
                      labels={'index': category, 'Number of Genes': 'Number of Genes'},
@@ -279,6 +287,7 @@ def generate_individual_plots(df, category, title, show_yaxis_label):
     fig.update_layout(xaxis_title="", yaxis_title="Number of Genes" if show_yaxis_label else "")
     if category == 'age_onset_asqm_standard':
         fig.update_xaxes(tickangle=45)
+
     return fig
 
 # Specify columns where you want to account for missing data
