@@ -198,13 +198,11 @@ if efficacy_missing:
 df_filtered = df_filtered.query(" or ".join(efficacy_conditions)) if efficacy_conditions else df_filtered
 
 # Display the filtered results
-genes_list = df_filtered['gene'].tolist()
-genes_html = "<div style='font-family: Arial; font-size: 11px; color: black;'>"
-for gene in genes_list:
-    genes_html += f"{gene}<br>"
-genes_html += "</div>"
 
-st.markdown(genes_html, unsafe_allow_html=True)
+filtered_genes_diseases = df_filtered[['gene', 'name_disease']]
+
+# Display as a table in Streamlit
+st.write("Filtered Genes and Corresponding Diseases", filtered_genes_diseases)
 
 # Assuming df_filtered is your DataFrame filtered according to the user's selections.
 
