@@ -64,7 +64,8 @@ st.sidebar.header('Inheritance')
 # Checkboxes for Inheritance with unique keys
 inheritance_ar = st.sidebar.checkbox('AR', value=False, key='inheritance_ar_key')
 inheritance_ad = st.sidebar.checkbox('AD', value=False, key='inheritance_ad_key')
-inheritance_xl = st.sidebar.checkbox('XL', value=False, key='inheritance_xl_key')
+inheritance_xlr = st.sidebar.checkbox('XLR', value=False, key='inheritance_xlr_key')
+inheritance_xld = st.sidebar.checkbox('XLD', value=False, key='inheritance_xld_key')
 inheritance_missing = st.sidebar.checkbox('Missing', value=False, key='inheritance_missing_key')
 
 # Apply Inheritance filter
@@ -73,8 +74,10 @@ if inheritance_ar:
     inheritance_conditions.append("inheritance_babyseq2 == 'AR'")
 if inheritance_ad:
     inheritance_conditions.append("inheritance_babyseq2 == 'AD'")
-if inheritance_xl:
+if inheritance_xlr:
     inheritance_conditions.append("inheritance_babyseq2 == 'XLR'")
+if inheritance_xld:
+    inheritance_conditions.append("inheritance_babyseq2 == 'XLD'")
 if inheritance_missing:
     inheritance_conditions.append("inheritance_babyseq2.isna()")
 
