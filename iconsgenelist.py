@@ -91,7 +91,7 @@ penetrance_conditions = []
 if penetrance_high:
     penetrance_conditions.append("penetrance_babyseq2 == 'HIGH (A)'")
 if penetrance_moderate:
-    penetrance_conditions.append("penetrance_babyseq2 == 'MODERATE(A)'")
+    penetrance_conditions.append("penetrance_babyseq2 == 'MODERATE (A)'")
 if penetrance_missing:
     penetrance_conditions.append("penetrance_babyseq2.isna()")
 
