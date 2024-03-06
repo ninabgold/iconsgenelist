@@ -234,7 +234,17 @@ custom_titles = {
     'efficacy_asqm': 'Efficacy (ASQM)'
 }
 
+def preprocess_for_missing_data(df, columns):
+    """
+    Adjust specified columns in the DataFrame to include 'Missing' as a category
+    for NaN (empty) cells.
+    """
+    for column in columns:
+        df[column] = df[column].fillna('Missing')
+    return df
+
 def generate_individual_plots(df, category, title, show_yaxis_label):
+    # Prepare data for plotting
     gene_counts = df[category].value_counts().reset_index()
     gene_counts.columns = [category, 'Number of Genes']
 
@@ -252,16 +262,22 @@ def generate_individual_plots(df, category, title, show_yaxis_label):
     
     # Remove x-axis title
     fig.update_layout(xaxis_title="")
-    
+
     # Conditionally show y-axis title based on the show_yaxis_label flag
     yaxis_title = "Number of Genes" if show_yaxis_label else ""
     fig.update_layout(yaxis_title=yaxis_title)
 
-        # Specific adjustment for the 'Age of Onset (ASQM)' graph
+    # Specific adjustment for the 'Age of Onset (ASQM)' graph
     if category == 'age_onset_asqm_standard':
         fig.update_xaxes(tickangle=45)
 
     return fig
+
+# Specify columns where you want to account for missing data
+columns_to_account_for_missing = ['rusp', 'inheritance_babyseq2', 'severity_asqm', 'efficacy_asqm']
+
+# Preprocess the DataFrame to include 'Missing' as a category for the specified columns
+df_filtered = preprocess_for_missing_data(df_filtered, columns_to_account_for_missing)
 
 # Arrange plots in a 2x3 grid using Streamlit columns
 for i in range(0, len(categories), 3):
