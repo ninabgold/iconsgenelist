@@ -210,7 +210,7 @@ st.markdown(genes_html, unsafe_allow_html=True)
 
 categories = [
     'rusp',                             # RUSP status
-    'inheritance_babyseq2',              # Inheritance pattern
+    'inheritance_babyseq2',             # Inheritance pattern
     'orthogonal_test_goldetaldet',      # Orthogonal test
     'age_onset_asqm_standard',          # Age of onset
     'severity_asqm',                    # Severity of disease
@@ -232,7 +232,7 @@ def generate_and_display_bar_graphs(df, categories):
         fig = px.bar(plot_data, x=category, y='Number of Genes',
                      hover_data=['Genes'],
                      labels={'Genes': 'Included Genes'},
-                     title=f'Number of Genes by {category.replace("_", " ").title()}')
+                     title=f'{category.replace("_", " ").title()}')
         fig.update_traces(marker_color='navy', hovertemplate="<br>".join([
             "Category: %{x}",
             "Number of Genes: %{y}",
