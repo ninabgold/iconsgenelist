@@ -9,7 +9,7 @@ def load_data():
 
 df = load_data()
 
-st.title('Newborn Screening Gene Selector')
+st.title('Newborn screening gene selector')
 
 # Define checkboxes in the sidebar before using them
 st.sidebar.header('US RUSP status')
@@ -201,10 +201,14 @@ df_filtered = df_filtered.query(" or ".join(efficacy_conditions)) if efficacy_co
 
 filtered_genes_diseases = df_filtered[['gene', 'name_disease']]
 
-# Display as a table in Streamlit
-st.write("Filtered Genes and Corresponding Diseases", filtered_genes_diseases)
+# Rename columns for display
+filtered_genes_diseases.columns = ['Gene', 'Disease']
 
-# Assuming df_filtered is your DataFrame filtered according to the user's selections.
+# Reset index to start numbering at 1 for the table display
+filtered_genes_diseases.index = range(1, len(filtered_genes_diseases) + 1)
+
+# Display as a table in Streamlit, now with updated index and column names
+st.write("Filtered Genes and Corresponding Diseases", filtered_genes_diseases)
 
 categories = [
     'rusp',                             # RUSP status
