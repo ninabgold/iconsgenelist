@@ -5,7 +5,7 @@ import plotly.express as px
 # Use st.cache_data to cache the data loading function
 @st.cache_data
 def load_data():
-    return pd.read_csv('genelist_all_version15Feb.csv')
+    return pd.read_csv('genelist_all_version5March.csv')
 
 df = load_data()
 
@@ -192,7 +192,7 @@ if efficacy_missing:
 df_filtered = df_filtered.query(" or ".join(efficacy_conditions)) if efficacy_conditions else df_filtered
 
 # Display the filtered results
-genes_list = df_filtered['gene_official'].tolist()
+genes_list = df_filtered['gene'].tolist()
 genes_html = "<div style='font-family: Arial; font-size: 11px; color: black;'>"
 for gene in genes_list:
     genes_html += f"{gene}<br>"
@@ -219,7 +219,7 @@ def generate_and_display_bar_graphs(df, categories):
         gene_counts.columns = [category, 'Number of Genes']
         
         # For tooltips, we aggregate genes into lists grouped by the category
-        tooltips = df.groupby(category)['gene_official'].apply(list).reset_index(name='Genes')
+        tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
         plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
         
         # Plot
