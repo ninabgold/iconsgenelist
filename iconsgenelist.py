@@ -18,21 +18,32 @@ st.sidebar.header('Filters')
 # Title for RUSP status checkboxes
 st.sidebar.header('US RUSP Status')
 
-# Checkboxes for RUSP status with unique keys
-rusp_core = st.sidebar.checkbox('Core', value=False, key='rusp_core_key')
-rusp_secondary = st.sidebar.checkbox('Secondary', value=False, key='rusp_secondary_key')
-rusp_not_on_rusp = st.sidebar.checkbox('Not on RUSP', value=False, key='rusp_not_on_rusp_key')
+# Initialize df_filtered with the full DataFrame as default
+df_filtered = df.copy()
 
-# Apply RUSP status filter using DataFrame.query method to avoid ambiguity
-query_string = []
-if rusp_core:
-    query_string.append("rusp == 'Core'")
-if rusp_secondary:
-    query_string.append("rusp == 'Secondary'")
+# Apply filters for 'Core' and 'Secondary' using query if those are selected
+if rusp_core or rusp_secondary:
+    query_conditions = []
+    if rusp_core:
+        query_conditions.append("rusp == 'Core'")
+    if rusp_secondary:
+        query_conditions.append("rusp == 'Secondary'")
+    
+    # Combine 'Core' and 'Secondary' conditions with "or" and filter df accordingly
+    df_filtered = df.query(" or ".join(query_conditions))
+
+# Separately handle 'Not on RUSP' because it involves checking for NaN
 if rusp_not_on_rusp:
-    query_string.append("rusp.isna()", engine='python')
+    # If either 'Core' or 'Secondary' is also selected, we need to combine with the previous filter
+    if rusp_core or rusp_secondary:
+        # Combine with previously filtered df_filtered
+        df_filtered = pd.concat([df_filtered, df[df['rusp'].isna()]])
+    else:
+        # Directly filter df for NaN values in 'rusp' column
+        df_filtered = df[df['rusp'].isna()]
 
-df_filtered = df.query(" or ".join(query_string)) if query_string else df.copy()
+# Ensure no duplicate rows after concatenation (if applicable)
+df_filtered = df_filtered.drop_duplicates()
 
 # Slider for number of screening programs
 num_programs = st.sidebar.slider('Number of screening programs that include gene', 1, 26, 1, key='num_programs_key')
