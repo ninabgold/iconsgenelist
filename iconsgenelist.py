@@ -327,44 +327,44 @@ columns_to_fill = [
     'scr_perkinelmer', 'scr_sema'
 ]
 
-# Fill the empty cells in the dataframe
-for column in columns_to_fill:
-    df_filtered[column] = df_filtered[column].fillna(0)
+program_columns = [
+    'scr_babydetectv2', 'scr_babyscreen', 'scr_babyseq2', 'scr_beginngs',
+    'scr_chenetal', 'scr_earlycheck', 'scr_firststeps', 'scr_generation',
+    'scr_gnstar', 'scr_guardian', 'scr_jianetal', 'scr_leeetal',
+    'scr_luoetal', 'scr_neoexome', 'scr_neoseq', 'scr_nests',
+    'scr_newbornsinsa', 'scr_puglia', 'scr_wangetal', 'scr_foresite',
+    'scr_fulgent', 'scr_igenomix', 'scr_mendelics', 'scr_nurture',
+    'scr_perkinelmer', 'scr_sema'
+]
 
-# Define a function to get all selected program columns
-def get_selected_program_columns():
-    selected_program_columns = []
-    for program in columns_to_fill:
-        if df_filtered[program].eq(1).any():
-            selected_program_columns.append(program)
-    return selected_program_columns
+# Replace empty cells with 0 for the specified columns
+df_filtered[program_columns] = df_filtered[program_columns].fillna(0)
 
-selected_programs = get_selected_program_columns()
+# Filter the DataFrame to only include the genes that have been selected based on the sidebar selections
+selected_genes = df_filtered['gene']
 
-# Continue with the heatmap creation only if there are selected programs
-if selected_programs:
-    # Filter the DataFrame to only include the selected programs
-    heatmap_data = df_filtered[['gene'] + selected_programs].set_index('gene')
-    # Convert the values into colors (1 -> blue, 0 -> white)
-    colors = ['#FFFFFF' if value == 0 else '#0000FF' for value in heatmap_data.values.flatten()]
-    heatmap_data_colors = [colors[i:i+len(selected_programs)] for i in range(0, len(colors), len(selected_programs))]
-    
-    # Create the heatmap using Plotly
-    fig_heatmap = go.Figure(data=go.Heatmap(
-        z=heatmap_data_colors,
-        x=selected_programs,
-        y=heatmap_data.index,
-        colorscale='Blues',
-        showscale=False
-    ))
+# Prepare data for the heatmap: genes along y-axis and program names along x-axis
+heatmap_data = df_filtered.set_index('gene')[program_columns]
+heatmap_values = heatmap_data.values
 
-    # Update the layout of the heatmap
-    fig_heatmap.update_layout(
-        title='Gene Program Participation',
-        xaxis_title="Programs",
-        yaxis_title="Genes"
-    )
+# Create the heatmap using Plotly
+fig_heatmap = go.Figure(data=go.Heatmap(
+    z=heatmap_values,
+    x=program_columns,
+    y=selected_genes,
+    colorscale='Blues',
+    showscale=False
+))
 
-    # Display the heatmap below the bar graphs
-    st.plotly_chart(fig_heatmap, use_container_width=True)
+# Update the layout of the heatmap
+fig_heatmap.update_layout(
+    title='Gene Program Participation',
+    xaxis_title="Programs",
+    yaxis_title="Genes",
+    xaxis={'tickangle': -45},
+    yaxis={'autorange': 'reversed'}  # Optional to have the genes in reverse order
+)
+
+# Display the heatmap below the bar graphs
+st.plotly_chart(fig_heatmap, use_container_width=True)
 
