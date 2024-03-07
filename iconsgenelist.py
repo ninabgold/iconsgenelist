@@ -314,6 +314,8 @@ for i in range(0, len(categories), 3):
             fig = generate_individual_plots(df_filtered, category, title, show_yaxis_label)
             col.plotly_chart(fig, use_container_width=True)
 
+# Replace empty cells with 0 for the specified columns
+columns_to_fill = [
     'scr_babydetectv2', 'scr_babyscreen', 'scr_babyseq2', 'scr_beginngs', 
     'scr_chenetal', 'scr_earlycheck', 'scr_firststeps', 'scr_generation', 
     'scr_gnstar', 'scr_guardian', 'scr_jianetal', 'scr_leeetal', 
