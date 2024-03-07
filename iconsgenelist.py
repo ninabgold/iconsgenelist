@@ -313,3 +313,32 @@ for i in range(0, len(categories), 3):
             show_yaxis_label = (j == 0)  # Only show the y-axis label for the leftmost graph
             fig = generate_individual_plots(df_filtered, category, title, show_yaxis_label)
             col.plotly_chart(fig, use_container_width=True)
+
+# (Your existing code above)
+
+# After generating and displaying the bar plots, we will now add the heatmap
+# Prepare the data for the heatmap
+# Filter the DataFrame to only include the selected programs from the multiselector
+heatmap_data = df_filtered[['gene'] + selected_programs].set_index('gene')
+# Convert the values into colors (1 -> blue, 0 -> white)
+colors = ['#FFFFFF' if value == 0 else '#0000FF' for value in heatmap_data.values.flatten()]
+heatmap_data_colors = [colors[i:i+len(selected_programs)] for i in range(0, len(colors), len(selected_programs))]
+
+# Create the heatmap using Plotly
+fig_heatmap = go.Figure(data=go.Heatmap(
+    z=heatmap_data_colors,
+    x=selected_programs,
+    y=heatmap_data.index,
+    colorscale='Blues',
+    showscale=False
+))
+
+# Update the layout of the heatmap
+fig_heatmap.update_layout(
+    title='Gene Program Participation',
+    xaxis_title="Programs",
+    yaxis_title="Genes"
+)
+
+# Display the heatmap below the bar graphs
+st.plotly_chart(fig_heatmap, use_container_width=True)
