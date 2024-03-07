@@ -314,6 +314,9 @@ for i in range(0, len(categories), 3):
             fig = generate_individual_plots(df_filtered, category, title, show_yaxis_label)
             col.plotly_chart(fig, use_container_width=True)
 
+# ... (previous code)
+
+# Replace empty cells with 0 for the specified columns
 columns_to_fill = [
     'scr_babydetectv2', 'scr_babyscreen', 'scr_babyseq2', 'scr_beginngs', 
     'scr_chenetal', 'scr_earlycheck', 'scr_firststeps', 'scr_generation', 
@@ -324,34 +327,44 @@ columns_to_fill = [
     'scr_perkinelmer', 'scr_sema'
 ]
 
-df_filtered[columns_to_fill] = df_filtered[columns_to_fill].fillna(0)
+# Fill the empty cells in the dataframe
+for column in columns_to_fill:
+    df_filtered[column] = df_filtered[column].fillna(0)
 
-# Ensure selected_programs is a list of column names as strings
-if not selected_programs:
-    st.error("Please select at least one program.")
-else:
-    # Filter the DataFrame to only include the selected programs from the multiselector
+# Define a function to get all selected program columns
+def get_selected_program_columns():
+    selected_program_columns = []
+    for program in columns_to_fill:
+        if df_filtered[program].eq(1).any():
+            selected_program_columns.append(program)
+    return selected_program_columns
+
+selected_programs = get_selected_program_columns()
+
+# Continue with the heatmap creation only if there are selected programs
+if selected_programs:
+    # Filter the DataFrame to only include the selected programs
     heatmap_data = df_filtered[['gene'] + selected_programs].set_index('gene')
+    # Convert the values into colors (1 -> blue, 0 -> white)
+    colors = ['#FFFFFF' if value == 0 else '#0000FF' for value in heatmap_data.values.flatten()]
+    heatmap_data_colors = [colors[i:i+len(selected_programs)] for i in range(0, len(colors), len(selected_programs))]
+    
+    # Create the heatmap using Plotly
+    fig_heatmap = go.Figure(data=go.Heatmap(
+        z=heatmap_data_colors,
+        x=selected_programs,
+        y=heatmap_data.index,
+        colorscale='Blues',
+        showscale=False
+    ))
 
-# Convert the values into colors (1 -> blue, 0 -> white)
-colors = ['#FFFFFF' if value == 0 else '#0000FF' for value in heatmap_data.values.flatten()]
-heatmap_data_colors = [colors[i:i+len(selected_programs)] for i in range(0, len(colors), len(selected_programs))]
+    # Update the layout of the heatmap
+    fig_heatmap.update_layout(
+        title='Gene Program Participation',
+        xaxis_title="Programs",
+        yaxis_title="Genes"
+    )
 
-# Create the heatmap using Plotly
-fig_heatmap = go.Figure(data=go.Heatmap(
-    z=heatmap_data_colors,
-    x=selected_programs,
-    y=heatmap_data.index,
-    colorscale='Blues',
-    showscale=False
-))
+    # Display the heatmap below the bar graphs
+    st.plotly_chart(fig_heatmap, use_container_width=True)
 
-# Update the layout of the heatmap
-fig_heatmap.update_layout(
-    title='Gene Program Participation',
-    xaxis_title="Programs",
-    yaxis_title="Genes"
-)
-
-# Display the heatmap below the bar graphs
-st.plotly_chart(fig_heatmap, use_container_width=True)
