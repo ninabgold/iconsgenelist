@@ -314,7 +314,6 @@ for i in range(0, len(categories), 3):
             fig = generate_individual_plots(df_filtered, category, title, show_yaxis_label)
             col.plotly_chart(fig, use_container_width=True)
 
-# Replace empty cells with 0 for the specified columns
 columns_to_fill = [
     'scr_babydetectv2', 'scr_babyscreen', 'scr_babyseq2', 'scr_beginngs', 
     'scr_chenetal', 'scr_earlycheck', 'scr_firststeps', 'scr_generation', 
@@ -325,11 +324,15 @@ columns_to_fill = [
     'scr_perkinelmer', 'scr_sema'
 ]
 
-# Assuming df is your original dataframe loaded from the CSV
-df[columns_to_fill] = df[columns_to_fill].fillna(0)
+df_filtered[columns_to_fill] = df_filtered[columns_to_fill].fillna(0)
 
-# Filter the DataFrame to only include the selected programs from the multiselector
-heatmap_data = df_filtered[['gene'] + selected_programs].set_index('gene')
+# Ensure selected_programs is a list of column names as strings
+if not selected_programs:
+    st.error("Please select at least one program.")
+else:
+    # Filter the DataFrame to only include the selected programs from the multiselector
+    heatmap_data = df_filtered[['gene'] + selected_programs].set_index('gene')
+
 # Convert the values into colors (1 -> blue, 0 -> white)
 colors = ['#FFFFFF' if value == 0 else '#0000FF' for value in heatmap_data.values.flatten()]
 heatmap_data_colors = [colors[i:i+len(selected_programs)] for i in range(0, len(colors), len(selected_programs))]
