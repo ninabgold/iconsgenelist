@@ -314,21 +314,19 @@ for i in range(0, len(categories), 3):
             fig = generate_individual_plots(df_filtered, category, title, show_yaxis_label)
             col.plotly_chart(fig, use_container_width=True)
 
-# Prepare the data for the heatmap
+
 # Filter the DataFrame to only include the selected programs from the multiselector
 heatmap_data = df_filtered[['gene'] + selected_programs].set_index('gene')
-# Convert the values into colors (1 -> blue, 0 -> white)
-colors = ['#FFFFFF' if value == 0 else '#0000FF' for value in heatmap_data.values.flatten()]
-num_genes = len(heatmap_data.index)
-num_programs = len(selected_programs)
-heatmap_data_colors = [colors[i:i+num_programs] for i in range(0, num_genes*num_programs, num_programs)]
+
+# Convert the 1's to True and NaN/None/empty to False for coloring
+heatmap_bool = heatmap_data.applymap(lambda x: x == 1)
 
 # Create the heatmap using Plotly
 fig_heatmap = go.Figure(data=go.Heatmap(
-    z=heatmap_data_colors,
+    z=heatmap_bool.values,
     x=selected_programs,
-    y=heatmap_data.index.tolist(),  # Convert index to list for y-axis labels
-    colorscale='Blues',
+    y=heatmap_data.index,
+    colorscale=[[0, 'white'], [1, 'blue']],
     showscale=False
 ))
 
@@ -336,8 +334,11 @@ fig_heatmap = go.Figure(data=go.Heatmap(
 fig_heatmap.update_layout(
     title='Gene Program Participation',
     xaxis_title="Programs",
-    yaxis_title="Genes"
+    yaxis_title="Genes",
+    xaxis={'side': 'top'}
 )
 
 # Display the heatmap below the bar graphs
-st.plotly_chart
+st.plotly_chart(fig_heatmap, use_container_width=True)
+
+# (Any additional code goes below)
