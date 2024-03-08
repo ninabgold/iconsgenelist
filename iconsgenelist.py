@@ -355,15 +355,8 @@ columns_to_fill = [
     'scr_perkinelmer', 'scr_sema'
 ]
 
-program_columns = [
-    'scr_babydetectv2', 'scr_babyscreen', 'scr_babyseq2', 'scr_beginngs',
-    'scr_chenetal', 'scr_earlycheck', 'scr_firststeps', 'scr_generation',
-    'scr_gnstar', 'scr_guardian', 'scr_jianetal', 'scr_leeetal',
-    'scr_luoetal', 'scr_neoexome', 'scr_neoseq', 'scr_nests',
-    'scr_newbornsinsa', 'scr_puglia', 'scr_wangetal', 'scr_foresite',
-    'scr_fulgent', 'scr_igenomix', 'scr_mendelics', 'scr_nurture',
-    'scr_perkinelmer', 'scr_sema'
-]
+# Renaming and formatting program column names
+formatted_program_columns = [col[4:].capitalize() for col in program_columns]
 
 # Replace empty cells with 0 for the specified columns
 df_filtered[program_columns] = df_filtered[program_columns].fillna(0)
@@ -371,29 +364,30 @@ df_filtered[program_columns] = df_filtered[program_columns].fillna(0)
 # Filter the DataFrame to only include the genes that have been selected based on the sidebar selections
 selected_genes = df_filtered['gene']
 
-# Prepare data for the heatmap: genes along y-axis and program names along x-axis
+# Prepare data for the heatmap: genes along y-axis and formatted program names along x-axis
 heatmap_data = df_filtered.set_index('gene')[program_columns]
 heatmap_values = heatmap_data.values
 
-# Calculate height per gene based on the target of 1200 pixels for 1750 genes
-height_per_gene = 1200 / 1750
-
 # Calculate the dynamic height based on the actual number of selected_genes
+height_per_gene = 1200 / 1750  # Example calculation, adjust as necessary
 dynamic_height = height_per_gene * len(selected_genes)
-
-# Ensure there's a minimum height for visibility and a maximum for practicality
-min_height = 600  # Minimum height to ensure the plot is visible even with few genes
-max_height = 3000  # Maximum height to avoid an excessively long plot
+min_height = 600  # Minimum height
+max_height = 3000  # Maximum height
 dynamic_height = max(min_height, min(dynamic_height, max_height))
 
-# Create the heatmap using Plotly
+# Create the heatmap using Plotly with formatted column names
 fig_heatmap = go.Figure(data=go.Heatmap(
     z=heatmap_values,
-    x=program_columns,
+    x=formatted_program_columns,  # Use the formatted column names here
     y=selected_genes,
     colorscale='Blues',
     showscale=False
 ))
+
+# Update layout with the dynamically calculated height
+fig_heatmap.update_layout(
+    height=dynamic_height
+)
 
 # Update the layout of the heatmap with dynamic height
 fig_heatmap.update_layout(
