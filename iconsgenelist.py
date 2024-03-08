@@ -150,8 +150,10 @@ if age_onset_adolescent_adult:
 if age_onset_variable:
     age_onset_conditions.append("age_onset_asqm_standard == 'Variable'")
 if age_onset_missing:
-    age_onset_conditions.append("age_onset_asqm_standard.isna()")
+    # Filter only for cells explicitly labeled as "missing"
+    age_onset_conditions.append("age_onset_asqm_standard == 'missing'")
 
+# Combine the conditions with an "or" operator and apply the filter to df_filtered
 df_filtered = df_filtered.query(" or ".join(age_onset_conditions)) if age_onset_conditions else df_filtered
 
 # Title for Severity of disease checkboxes
