@@ -264,50 +264,44 @@ def preprocess_for_missing_data(df, columns):
 
 def generate_individual_plots(df, category, title, show_yaxis_label):
     if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard']:
-        # Ensure 'Missing' is recognized for each category and treated accordingly
-        df[category] = df[category].fillna('Missing')
-
+        # For the 'age_onset_asqm_standard' category, explicitly combine 'missing' with 'Missing'
+        if category == 'age_onset_asqm_standard':
+            df[category] = df[category].replace({'missing': 'Missing'}).fillna('Missing')
+        
         if category == 'rusp':
             df['rusp'] = df['rusp'].replace({'Missing': 'Not on RUSP'})
             order = ['Core', 'Secondary', 'Not on RUSP']
-        elif category == 'inheritance_babyseq2':
+        elif category == 'inheritance_babyseq2' or category == 'orthogonal_test_goldetaldet':
+            df[category] = df[category].fillna('Missing')
             order = df[category].unique().tolist()
             if 'Missing' in order:
                 order.append(order.pop(order.index('Missing')))
-        elif category == 'orthogonal_test_goldetaldet':
-            order = ['Y', 'N', 'Missing']
+        # Generate the order list for 'age_onset_asqm_standard', now with combined 'Missing'
         elif category == 'age_onset_asqm_standard':
-            # Adjust the order list based on your actual data categories for age_onset_asqm_standard
-            order = df[category].unique().tolist()
-            if 'Missing' in order:
-                order.remove('Missing')
-            order += ['Missing']  # Ensuring 'Missing' is the last category
-            df[category] = df[category].replace({'missing': 'Missing', 'Childhood': 'Child', 'Adolescent/Adult': 'Adult', 'Missing': 'Missing'})
-        
+            order = ['Birth', 'Neonatal', 'Infant', 'Childhood', 'Adolescent/Adult', 'Variable', 'Missing']  # Adjust this list as needed based on your actual categories
+
+        # Ensure the dataframe category is treated as categorical with the defined order
         df[category] = pd.Categorical(df[category], categories=order, ordered=True)
-        gene_counts = df[category].value_counts().reindex(order).fillna(0)
         
-        fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values,
-                     title=title, labels={'y': 'Number of Genes'})
+        # Count occurrences of each category, ensuring it aligns with the defined order
+        gene_counts = df[category].value_counts().reindex(order).fillna(0)
+
+        # Proceed to generate the bar plot
+        fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values, title=title, labels={'y': 'Number of Genes'})
     else:
         gene_counts = df[category].value_counts().reset_index()
         gene_counts.columns = [category, 'Number of Genes']
         tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
         plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
-        fig = px.bar(plot_data, x=category, y='Number of Genes',
-                     hover_data=['Genes'],
-                     labels={'index': category, 'Number of Genes': 'Number of Genes'},
-                     title=title)
+        fig = px.bar(plot_data, x=category, y='Number of Genes', hover_data=['Genes'], labels={'index': category, 'Number of Genes': 'Number of Genes'}, title=title)
     
-    fig.update_traces(marker_color='#D3D3D3', hovertemplate="<br>".join([
-        "Category: %{x}",
-        "Number of Genes: %{y}",
-        "Genes: %{customdata[0]}"]))
+    fig.update_traces(marker_color='#D3D3D3', hovertemplate="<br>".join(["Category: %{x}", "Number of Genes: %{y}", "Genes: %{customdata[0]}"]))
     fig.update_layout(xaxis_title="", yaxis_title="Number of Genes" if show_yaxis_label else "")
     if category == 'age_onset_asqm_standard':
         fig.update_xaxes(tickangle=45)
 
     return fig
+
 
 # Specify columns where you want to account for missing data
 columns_to_account_for_missing = ['rusp', 'inheritance_babyseq2', 'severity_asqm', 'efficacy_asqm']
