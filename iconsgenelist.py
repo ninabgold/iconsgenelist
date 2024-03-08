@@ -364,13 +364,14 @@ fig_heatmap = go.Figure(data=go.Heatmap(
     showscale=False
 ))
 
-# Update the layout of the heatmap
+# Update the layout of the heatmap, setting a larger height for a longer vertical appearance
 fig_heatmap.update_layout(
     title='Inclusion across genomic newborn screening programs',
     xaxis_title="Programs",
     yaxis_title="Genes",
     xaxis={'tickangle': -45},
-    yaxis={'autorange': 'reversed'}  # Optional to have the genes in reverse order
+    yaxis={'autorange': 'reversed'},  # Optional to have the genes in reverse order
+    height=1200  # Adjust this value as needed to achieve the desired vertical length
 )
 
 # Display the heatmap below the bar graphs
