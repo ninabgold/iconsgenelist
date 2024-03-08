@@ -212,7 +212,8 @@ filtered_genes_diseases.columns = ['Gene', 'Disease']
 filtered_genes_diseases.index = range(1, len(filtered_genes_diseases) + 1)
 
 # Display as a table in Streamlit, now with updated index and column names
-st.write("Filtered genes and corresponding diseases", filtered_genes_diseases)
+st.markdown("**Filtered genes and corresponding diseases**")
+st.write(filtered_genes_diseases)
 
 # Calculate and display the total number of unique genes in the filtered list
 total_unique_genes = filtered_genes_diseases['Gene'].nunique()
