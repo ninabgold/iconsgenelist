@@ -263,28 +263,42 @@ def preprocess_for_missing_data(df, columns):
     return df
 
 def generate_individual_plots(df, category, title, show_yaxis_label):
-    if category == 'age_onset_asqm_standard':
-        # Ensure that both 'missing' and NaN values are consolidated under 'Missing'
-        df[category] = df[category].replace({'missing': 'Missing'}).fillna('Missing')
+    if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard']:
+        # Ensure 'Missing' is recognized for each category and treated accordingly
+        df[category] = df[category].fillna('Missing')
 
-        # Define the order of categories, ensuring 'Missing' is included if applicable
-        order = ['Birth', 'Neonatal', 'Infant', 'Childhood', 'Adolescent/Adult', 'Variable', 'Missing']
+        if category == 'rusp':
+            df['rusp'] = df['rusp'].replace({'Missing': 'Not on RUSP'})
+            order = ['Core', 'Secondary', 'Not on RUSP']
+        elif category == 'inheritance_babyseq2':
+            order = df[category].unique().tolist()
+            if 'Missing' in order:
+                order.append(order.pop(order.index('Missing')))
+        elif category == 'orthogonal_test_goldetaldet':
+            order = ['Y', 'N', 'Missing']
+        elif category == 'age_onset_asqm_standard':
+            # Adjust the order list based on your actual data categories for age_onset_asqm_standard
+            order = df[category].unique().tolist()
+            if 'Missing' in order:
+                order.remove('Missing')
+            order += ['Missing']  # Ensuring 'Missing' is the last category
+            df[category] = df[category].replace({'missing': 'Missing', 'Childhood': 'Child', 'Adolescent/Adult': 'Adult', 'Missing': 'Missing'})
         
-        # Make sure the dataframe category is treated as categorical with the defined order
         df[category] = pd.Categorical(df[category], categories=order, ordered=True)
-
-        # Count occurrences of each category, ensuring it aligns with the defined order
         gene_counts = df[category].value_counts().reindex(order).fillna(0)
-
-        # Proceed to generate the bar plot
+        
         fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values,
                      title=title, labels={'y': 'Number of Genes'})
-    # The rest of the function remains the same for handling other categories...
     else:
-        # Existing code for other categories...
-        pass
-
-    # Update figure layout and return
+        gene_counts = df[category].value_counts().reset_index()
+        gene_counts.columns = [category, 'Number of Genes']
+        tooltips = df.groupby(category)['gene'].apply(list).reset_index(name='Genes')
+        plot_data = pd.merge(gene_counts, tooltips, on=category, how='left')
+        fig = px.bar(plot_data, x=category, y='Number of Genes',
+                     hover_data=['Genes'],
+                     labels={'index': category, 'Number of Genes': 'Number of Genes'},
+                     title=title)
+    
     fig.update_traces(marker_color='#D3D3D3', hovertemplate="<br>".join([
         "Category: %{x}",
         "Number of Genes: %{y}",
