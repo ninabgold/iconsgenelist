@@ -366,7 +366,7 @@ fig_heatmap = go.Figure(data=go.Heatmap(
 
 # Update the layout of the heatmap
 fig_heatmap.update_layout(
-    title='Gene Program Participation',
+    title='Inclusion across genomic newborn screening programs',
     xaxis_title="Programs",
     yaxis_title="Genes",
     xaxis={'tickangle': -45},
