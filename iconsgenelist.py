@@ -202,6 +202,9 @@ df_filtered = df_filtered.query(" or ".join(efficacy_conditions)) if efficacy_co
 
 filtered_genes_diseases = df_filtered[['gene', 'name_disease']]
 
+# Sort the DataFrame by the 'Gene' column in alphabetical order
+filtered_genes_diseases = filtered_genes_diseases.sort_values(by='gene')
+
 # Rename columns for display
 filtered_genes_diseases.columns = ['Gene', 'Disease']
 
