@@ -264,8 +264,9 @@ def preprocess_for_missing_data(df, columns):
 
 def generate_individual_plots(df, category, title, show_yaxis_label):
     if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard']:
-        # Ensure 'Missing' is recognized for each category and treated accordingly
-        df[category] = df[category].fillna('Missing')
+        # Fill missing values with 'Missing' for uniformity in categories except 'age_onset_asqm_standard'
+        if category != 'age_onset_asqm_standard':  # Skip filling 'Missing' for 'age_onset_asqm_standard'
+            df[category] = df[category].fillna('Missing')
 
         if category == 'rusp':
             df['rusp'] = df['rusp'].replace({'Missing': 'Not on RUSP'})
@@ -279,10 +280,9 @@ def generate_individual_plots(df, category, title, show_yaxis_label):
         elif category == 'age_onset_asqm_standard':
             # Adjust the order list based on your actual data categories for age_onset_asqm_standard
             order = df[category].unique().tolist()
-            if 'Missing' in order:
-                order.remove('Missing')
-            order += ['Missing']  # Ensuring 'Missing' is the last category
-            df[category] = df[category].replace({'missing': 'Missing', 'Childhood': 'Child', 'Adolescent/Adult': 'Adult', 'Missing': 'Missing'})
+            # Ensure 'Missing' or 'missing' is not included in the plot
+            order = [item for item in order if item != 'Missing' and item != 'missing']
+            df[category] = df[category].replace({'Childhood': 'Child', 'Adolescent/Adult': 'Adult'})
         
         df[category] = pd.Categorical(df[category], categories=order, ordered=True)
         gene_counts = df[category].value_counts().reindex(order).fillna(0)
