@@ -273,6 +273,17 @@ replacement_dict = {
 # Apply the replacements
 df_filtered['severity_asqm'] = df_filtered['severity_asqm'].replace(replacement_dict)
 
+# Renaming values in the 'efficacy_asqm' column
+efficacy_replacement_dict = {
+    0: 'Missing',
+    1: 'Low',
+    2: 'Moderate',
+    3: 'High'
+}
+
+# Apply the replacements
+df_filtered['efficacy_asqm'] = df_filtered['efficacy_asqm'].replace(efficacy_replacement_dict)
+
 #Making the plots
 def generate_individual_plots(df, category, title, show_yaxis_label):
     if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard']:
