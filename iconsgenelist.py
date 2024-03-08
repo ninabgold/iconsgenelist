@@ -325,8 +325,6 @@ for i in range(0, len(categories), 3):
             fig = generate_individual_plots(df_filtered, category, title, show_yaxis_label)
             col.plotly_chart(fig, use_container_width=True)
 
-# ... (previous code)
-
 # Replace empty cells with 0 for the specified columns
 columns_to_fill = [
     'scr_babydetectv2', 'scr_babyscreen', 'scr_babyseq2', 'scr_beginngs', 
@@ -358,6 +356,17 @@ selected_genes = df_filtered['gene']
 heatmap_data = df_filtered.set_index('gene')[program_columns]
 heatmap_values = heatmap_data.values
 
+# Calculate height per gene based on the target of 1200 pixels for 1750 genes
+height_per_gene = 1200 / 1750
+
+# Calculate the dynamic height based on the actual number of selected_genes
+dynamic_height = height_per_gene * len(selected_genes)
+
+# Ensure there's a minimum height for visibility and a maximum for practicality
+min_height = 600  # Minimum height to ensure the plot is visible even with few genes
+max_height = 3000  # Maximum height to avoid an excessively long plot
+dynamic_height = max(min_height, min(dynamic_height, max_height))
+
 # Create the heatmap using Plotly
 fig_heatmap = go.Figure(data=go.Heatmap(
     z=heatmap_values,
@@ -367,14 +376,14 @@ fig_heatmap = go.Figure(data=go.Heatmap(
     showscale=False
 ))
 
-# Update the layout of the heatmap, setting a larger height for a longer vertical appearance
+# Update the layout of the heatmap with dynamic height
 fig_heatmap.update_layout(
     title='Inclusion across genomic newborn screening programs',
     xaxis_title="Programs",
     yaxis_title="Genes",
     xaxis={'tickangle': -45},
-    yaxis={'autorange': 'reversed'},  # Optional to have the genes in reverse order
-    height=1200  # Adjust this value as needed to achieve the desired vertical length
+    yaxis={'autorange': 'reversed'},
+    height=dynamic_height  # Use the dynamically calculated height
 )
 
 # Display the heatmap below the bar graphs
