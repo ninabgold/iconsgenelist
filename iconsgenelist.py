@@ -262,6 +262,18 @@ def preprocess_for_missing_data(df, columns):
         df[column] = df[column].fillna('Missing')
     return df
 
+# Renaming values in the 'severity_asqm' column
+replacement_dict = {
+    0: 'Missing',
+    1: 'Mild',
+    2: 'Moderate',
+    3: 'Severe'
+}
+
+# Apply the replacements
+df_filtered['severity_asqm'] = df_filtered['severity_asqm'].replace(replacement_dict)
+
+#Making the plots
 def generate_individual_plots(df, category, title, show_yaxis_label):
     if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard']:
         # For the 'age_onset_asqm_standard' category, explicitly combine 'missing' with 'Missing'
