@@ -177,7 +177,7 @@ if severity_missing:
 df_filtered = df_filtered.query(" or ".join(severity_conditions)) if severity_conditions else df_filtered
 
 # Title for Efficacy of Treatment checkboxes
-st.sidebar.header('Efficacy of Treatment')
+st.sidebar.header('Efficacy of Treatment (ASQM)')
 
 # Checkboxes for Efficacy of Treatment with unique keys
 efficacy_high = st.sidebar.checkbox('High efficacy', value=False, key='efficacy_high_key')
@@ -210,6 +210,10 @@ filtered_genes_diseases.index = range(1, len(filtered_genes_diseases) + 1)
 
 # Display as a table in Streamlit, now with updated index and column names
 st.write("Filtered genes and corresponding diseases", filtered_genes_diseases)
+
+# Calculate and display the total number of unique genes in the filtered list
+total_unique_genes = filtered_genes_diseases['Gene'].nunique()
+st.markdown(f"Total number of genes: {total_unique_genes}")
 
 categories = [
     'rusp',                             # RUSP status
