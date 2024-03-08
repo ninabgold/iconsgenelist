@@ -213,7 +213,7 @@ st.write("Filtered genes and corresponding diseases", filtered_genes_diseases)
 
 # Calculate and display the total number of unique genes in the filtered list
 total_unique_genes = filtered_genes_diseases['Gene'].nunique()
-st.markdown(f**"Total number of genes:** {total_unique_genes}")
+st.markdown(f"**Total number of genes:** {total_unique_genes}")
 
 categories = [
     'rusp',                             # RUSP status
