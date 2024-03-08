@@ -248,6 +248,9 @@ custom_titles = {
     'efficacy_asqm': 'Efficacy (ASQM)'
 }
 
+# Before generating the plots, adjust the orthogonal_test_goldetaldet column
+df_filtered['orthogonal_test_goldetaldet'] = df_filtered['orthogonal_test_goldetaldet'].replace({'missing': 'Missing'})
+
 def preprocess_for_missing_data(df, columns):
     """
     Adjust specified columns in the DataFrame to include 'Missing' as a category
