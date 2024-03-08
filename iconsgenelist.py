@@ -284,32 +284,31 @@ efficacy_replacement_dict = {
 # Apply the replacements
 df_filtered['efficacy_asqm'] = df_filtered['efficacy_asqm'].replace(efficacy_replacement_dict)
 
-#Making the plots
+# Making the plots 
 def generate_individual_plots(df, category, title, show_yaxis_label):
-    if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard']:
-        # For the 'age_onset_asqm_standard' category, explicitly combine 'missing' with 'Missing'
+    if category in ['rusp', 'inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'age_onset_asqm_standard', 'severity_asqm', 'efficacy_asqm']:
+        # Combine 'missing' with 'Missing' for 'age_onset_asqm_standard'
         if category == 'age_onset_asqm_standard':
             df[category] = df[category].replace({'missing': 'Missing'}).fillna('Missing')
-        
+
         if category == 'rusp':
             df['rusp'] = df['rusp'].replace({'Missing': 'Not on RUSP'})
             order = ['Core', 'Secondary', 'Not on RUSP']
-        elif category == 'inheritance_babyseq2' or category == 'orthogonal_test_goldetaldet':
+        elif category in ['inheritance_babyseq2', 'orthogonal_test_goldetaldet', 'severity_asqm', 'efficacy_asqm']:
             df[category] = df[category].fillna('Missing')
             order = df[category].unique().tolist()
-            if 'Missing' in order:
+            # For 'severity_asqm' and 'efficacy_asqm', ensure 'Missing' is the last category
+            if category in ['severity_asqm', 'efficacy_asqm'] and 'Missing' in order:
+                order.remove('Missing')
+                order.append('Missing')
+            elif 'Missing' in order:  # For other categories with 'Missing'
                 order.append(order.pop(order.index('Missing')))
-        # Generate the order list for 'age_onset_asqm_standard', now with combined 'Missing'
         elif category == 'age_onset_asqm_standard':
-            order = ['Birth', 'Neonatal', 'Infant', 'Childhood', 'Adolescent/Adult', 'Variable', 'Missing']  # Adjust this list as needed based on your actual categories
+            order = ['Birth', 'Neonatal', 'Infant', 'Childhood', 'Adolescent/Adult', 'Variable', 'Missing']
 
-        # Ensure the dataframe category is treated as categorical with the defined order
         df[category] = pd.Categorical(df[category], categories=order, ordered=True)
-        
-        # Count occurrences of each category, ensuring it aligns with the defined order
         gene_counts = df[category].value_counts().reindex(order).fillna(0)
 
-        # Proceed to generate the bar plot
         fig = px.bar(gene_counts, x=gene_counts.index, y=gene_counts.values, title=title, labels={'y': 'Number of Genes'})
     else:
         gene_counts = df[category].value_counts().reset_index()
@@ -320,10 +319,11 @@ def generate_individual_plots(df, category, title, show_yaxis_label):
     
     fig.update_traces(marker_color='#D3D3D3', hovertemplate="<br>".join(["Category: %{x}", "Number of Genes: %{y}", "Genes: %{customdata[0]}"]))
     fig.update_layout(xaxis_title="", yaxis_title="Number of Genes" if show_yaxis_label else "")
-    if category == 'age_onset_asqm_standard':
+    if category in ['age_onset_asqm_standard', 'severity_asqm', 'efficacy_asqm']:
         fig.update_xaxes(tickangle=45)
 
     return fig
+
 
 
 # Specify columns where you want to account for missing data
