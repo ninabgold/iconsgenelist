@@ -371,6 +371,9 @@ df_filtered[program_columns] = df_filtered[program_columns].fillna(0)
 # Filter the DataFrame to only include the genes that have been selected based on the sidebar selections
 selected_genes = df_filtered['gene']
 
+# Sort df_filtered by 'gene' in alphabetical order before setting it as the index
+df_filtered_sorted = df_filtered.sort_values(by='gene')
+
 # Prepare data for the heatmap: genes along y-axis and program names along x-axis
 heatmap_data = df_filtered.set_index('gene')[program_columns]
 heatmap_values = heatmap_data.values
