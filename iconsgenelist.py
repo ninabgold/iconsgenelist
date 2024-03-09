@@ -371,45 +371,44 @@ df_filtered[program_columns] = df_filtered[program_columns].fillna(0)
 # Filter the DataFrame to only include the genes that have been selected based on the sidebar selections
 selected_genes = df_filtered['gene']
 
-# First, ensure df_filtered is sorted by 'gene' alphabetically
-df_filtered_sorted = df_filtered.sort_values('gene')
-
-# Now, prepare the heatmap data with the sorted DataFrame
-heatmap_data = df_filtered_sorted.set_index('gene')[program_columns]
+# Prepare data for the heatmap: genes along y-axis and program names along x-axis
+heatmap_data = df_filtered.set_index('gene')[program_columns]
 heatmap_values = heatmap_data.values
 
-# Since we're using a sorted DataFrame, extract the sorted gene names for y-axis labels
-sorted_genes = df_filtered_sorted.index.values
+# Calculate height per gene based on the target of 1200 pixels for 1750 genes
+height_per_gene = 1200 / 1750
 
-# Dynamic height calculations remain the same
-height_per_gene = 1200 / 1750  # Target height per gene
-dynamic_height = height_per_gene * len(sorted_genes)  # Adjust based on the actual number of sorted genes
-dynamic_height = max(min_height, min(dynamic_height, max_height))  # Ensure within min and max bounds
+# Calculate the dynamic height based on the actual number of selected_genes
+dynamic_height = height_per_gene * len(selected_genes)
 
-# Formatted program column names remain the same
+# Ensure there's a minimum height for visibility and a maximum for practicality
+min_height = 600  # Minimum height to ensure the plot is visible even with few genes
+max_height = 3000  # Maximum height to avoid an excessively long plot
+dynamic_height = max(min_height, min(dynamic_height, max_height))
+
+# Format program column names by removing 'scr_' prefix and capitalizing the first letter
 formatted_program_columns = [col[4:].capitalize() for col in program_columns]
 
-# Create the heatmap with the sorted genes and formatted program names
+# Create the heatmap using Plotly with formatted program names
 fig_heatmap = go.Figure(data=go.Heatmap(
     z=heatmap_values,
-    x=formatted_program_columns,  # Use the formatted program names
-    y=sorted_genes,  # Use the alphabetically sorted gene names
+    x=formatted_program_columns,  # Use the formatted column names here
+    y=selected_genes,
     colorscale='Blues',
     showscale=False
 ))
 
-# Update the heatmap layout with the dynamic height and sorted genes
+# Update the layout of the heatmap with dynamic height
 fig_heatmap.update_layout(
     title='Inclusion across genomic newborn screening programs',
     xaxis_title="Programs",
     yaxis_title="Genes",
     xaxis={'tickangle': -45, 'ticktext': formatted_program_columns, 'tickvals': list(range(len(formatted_program_columns)))},
-    yaxis={'autorange': True},  # Using True to ensure alphabetical order is from top to bottom
-    height=dynamic_height  # Apply the dynamically calculated height
+    yaxis={'autorange': 'reversed'},
+    height=dynamic_height  # Use the dynamically calculated height
 )
 
-# Display the heatmap
+# Display the heatmap below the bar graphs
 st.plotly_chart(fig_heatmap, use_container_width=True)
-
 
 
