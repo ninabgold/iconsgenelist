@@ -9,8 +9,6 @@ from plotly.subplots import make_subplots
 def load_data():
     return pd.read_csv('genelist_all_version5March.csv')
 
-
-
 df = load_data()
 
 st.title('Newborn screening gene selector')
@@ -369,7 +367,7 @@ program_columns = [
 df_filtered[program_columns] = df_filtered[program_columns].fillna(0)
 
 # Filter the DataFrame to only include the genes that have been selected based on the sidebar selections
-selected_genes = df_filtered['gene']
+selected_genes = df_filtered['gene'].sort_values().values
 
 # Prepare data for the heatmap: genes along y-axis and program names along x-axis
 heatmap_data = df_filtered.set_index('gene')[program_columns]
