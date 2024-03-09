@@ -365,18 +365,19 @@ program_columns = [
     'scr_perkinelmer', 'scr_sema'
 ]
 
-# Replace empty cells with 0 for the specified columns
+# Ensure all necessary program columns are filled with 0
 df_filtered[program_columns] = df_filtered[program_columns].fillna(0)
 
-# Filter the DataFrame to only include the genes that have been selected based on the sidebar selections
-selected_genes = df_filtered['gene']
-
-# Sort df_filtered by 'gene' in alphabetical order before setting it as the index
+# Sort df_filtered by 'gene' in alphabetical order
 df_filtered_sorted = df_filtered.sort_values(by='gene')
 
-# Prepare data for the heatmap: genes along y-axis and program names along x-axis
-heatmap_data = df_filtered.set_index('gene')[program_columns]
+# Correctly prepare data for the heatmap using the sorted DataFrame:
+# Set the sorted 'gene' as the index and select the program columns
+heatmap_data = df_filtered_sorted.set_index('gene')[program_columns]
 heatmap_values = heatmap_data.values
+
+# Since df_filtered_sorted is already sorted, 'selected_genes' will now directly come from it and be sorted
+selected_genes_sorted = df_filtered_sorted['gene'].values
 
 # Calculate height per gene based on the target of 1200 pixels for 1750 genes
 height_per_gene = 1200 / 1750
