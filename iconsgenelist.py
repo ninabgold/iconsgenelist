@@ -383,7 +383,7 @@ selected_genes_sorted = df_filtered_sorted['gene'].values
 height_per_gene = 1200 / 1750
 
 # Calculate the dynamic height based on the actual number of selected_genes
-dynamic_height = height_per_gene * len(selected_genes)
+dynamic_height = height_per_gene * len(selected_genes_sorted)
 
 # Ensure there's a minimum height for visibility and a maximum for practicality
 min_height = 600  # Minimum height to ensure the plot is visible even with few genes
